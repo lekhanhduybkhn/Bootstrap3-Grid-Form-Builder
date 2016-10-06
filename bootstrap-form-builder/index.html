@@ -51,7 +51,7 @@
                     var $body_offset = $(".form-body").offset();
                     var $posY = $body_offset.top;
                     var $posX = $body_offset.left;
-                    console.log($posX + ':' + $posY);
+                    //console.log($posX + ':' + $posY);
                     if (ui.position.left >= $posX && ui.position.top >= $posY) {
                         //console.log('kéo vào rồi form body roi');
                         var $desDiv = $("#destDiv");
@@ -62,7 +62,7 @@
                         var $diffY = ui.position.top - $posY;
                         var $numberRow = parseInt($diffY / $hSrcObj) + 1;
                         var $index = parseInt((ui.position.left - $posX) / ($wDest / 2)) + 2 * ($numberRow - 1);
-                        console.log($index);
+                       // console.log($index);
                         //lay ra tat ca cac row
                         var $rows = $(".form-body").find("div.row");
                         //neu chua co row nao
@@ -73,9 +73,9 @@
                                 if (!$eRow) { //not exits row i
                                     $divRow = $("<div/>").addClass("row").attr('id', 'row' + i);
 
-                                    var $col6 = $("<div/>").addClass("col-md-6 destDiv").attr('id', 'col' + $index);
+                                    var $col6 = $("<div/>").addClass("col-md-6 destDiv")/*.attr('id', 'col' + $index)*/;
 
-                                    var $hightLight = $("<div/>").attr('id', 'destDiv');
+                                    var $hightLight = $("<div/>").addClass('destDivBlock');
                                     $hightLight.css('background-color', '#eee');
                                     $hightLight.css('height', $hSrcObj + 'px');
 
@@ -98,21 +98,21 @@
                             $rows.each(function () {
                                 $eRow = $(this);
                                 var $indexRow = parseInt($eRow.attr('id').substring(3));
-
-                                if ($indexRow == $index / 2) { //đúng row đấy rồi
+                                if ($indexRow == parseInt($index/2)) { //đúng row đấy rồi
                                     var $total = 0;
                                     var $rowElements = $(this).find("div.destDiv");
-
+                                    var $totalWidth = 0;
                                     $.each($rowElements, function (index, value) {
                                         var $currentClass = value.className;
                                         var $weight = $currentClass.substring($currentClass.indexOf("col-md") + 7, $currentClass.indexOf("col-md") + 8);
                                         $total += parseInt($weight);
+                                        $totalWidth += $(this).outerWidth();
                                     });
                                     //check total weight
-                                    if ($total + 6 <= 12) {
+                                    if ($total + 6 <= 12 && (ui.position.left - $posX) > $totalWidth) {
                                         var $col6 = $("<div/>").addClass("col-md-6 destDiv select-element");
 
-                                        var $hightLight = $("<div/>").attr('id', 'destDiv');
+                                        var $hightLight = $("<div/>").addClass('destDivBlock');
                                         $hightLight.css('background-color', '#eee');
                                         $hightLight.css('height', $hSrcObj + 'px');
 
@@ -120,7 +120,24 @@
                                         $(this).append($col6);
                                     }
                                 }
-
+                                //for hightlight
+                                var $rowElements = $(this).find("div.destDiv");
+                                $.each($rowElements, function (index, value) {
+                                    $destDivBlocks = $(this).find("div.destDivBlock");
+                                    if ($destDivBlocks.length > 0) {
+                                        $.each($destDivBlocks, function () {
+                                            $destDivBlock = $(this);
+                                            if ((ui.position.left - $posX) >= ($destDivBlock.offset().left - $posX)
+                                                && (ui.position.left - $posX) < ($destDivBlock.offset().left - $posX + $destDivBlock.outerWidth())
+                                                && (ui.position.top - $posY) >= ($destDivBlock.offset().top - $posY)
+                                                && (ui.position.top - $posY) < ($destDivBlock.offset().top - $posY + $destDivBlock.outerHeight())) {
+                                                $destDivBlock.css('background-color', '#eee');
+                                            } else {
+                                                $destDivBlock.css('background-color', '#ffe');
+                                            }
+                                        });
+                                    }
+                                });
                             });
                         }
                     }
