@@ -47,32 +47,81 @@
                 appendTo: "body",
                 helper: "clone",
                 drag: function (event, ui) {
+                    //return;
                     var $body_offset = $(".form-body").offset();
                     var $posY = $body_offset.top;
                     var $posX = $body_offset.left;
-                    console.log($posX + ':' +  $posY);
+                    console.log($posX + ':' + $posY);
                     if (ui.position.left >= $posX && ui.position.top >= $posY) {
                         //console.log('kéo vào rồi form body roi');
-                        $rows = $(".form-body").find("div.row");
-                        //check neu chua co rows nao
-                        $desDiv = $("#destDiv");
-                        $srcObj = ui.helper;
-                        $hSrcObj = $srcObj.outerHeight() + 35;
-                        $wDest = $(".form-body").outerWidth();
+                        var $desDiv = $("#destDiv");
+                        var $srcObj = ui.helper;
+                        var $hSrcObj = $srcObj.outerHeight() + 35;
+                        var $wDest = $(".form-body").outerWidth();
 
-                        if ($rows.length == 0) {
-                            //create div row
-                            $divRow = $("<div/>").addClass("row");
-                            var $col6 = $("<div/>").addClass("col-md-6");
+                        var $diffY = ui.position.top - $posY;
+                        var $numberRow = parseInt($diffY / $hSrcObj) + 1;
+                        var $index = parseInt((ui.position.left - $posX) / ($wDest / 2)) + 2 * ($numberRow - 1);
+                        console.log($index);
+                        //lay ra tat ca cac row
+                        var $rows = $(".form-body").find("div.row");
+                        //neu chua co row nao
+                        if ($rows.length < $numberRow) {
+                            //tao cac row
+                            for (var i = 0; i < $numberRow ; i++) {
+                                var $eRow = document.getElementById("row" + i);
+                                if (!$eRow) { //not exits row i
+                                    $divRow = $("<div/>").addClass("row").attr('id', 'row' + i);
 
-                            var $hightLight = $("<div/>").attr('id', 'destDiv');
-                            $hightLight.css('background-color', '#eee');
-                            $hightLight.css('height', $hSrcObj + 'px');
+                                    var $col6 = $("<div/>").addClass("col-md-6 destDiv").attr('id', 'col' + $index);
 
-                            $col6.append($hightLight);
-                            $divRow.append($col6);
+                                    var $hightLight = $("<div/>").attr('id', 'destDiv');
+                                    $hightLight.css('background-color', '#eee');
+                                    $hightLight.css('height', $hSrcObj + 'px');
 
-                            $(".form-body").append($divRow);
+                                    $col6.append($hightLight);
+                                    $divRow.append($col6);
+
+                                    $(".form-body").append($divRow);
+                                }/* else { //exits row i
+                                    var $col6 = $("<div/>").addClass("col-md-6").attr('id', 'col' + $index);
+
+                                    var $hightLight = $("<div/>").attr('id', 'destDiv');
+                                    $hightLight.css('background-color', '#eee');
+                                    $hightLight.css('height', $hSrcObj + 'px');
+
+                                    $col6.append($hightLight);
+                                    $eRow.append($col6);
+                                }*/
+                            }
+                        } else {
+                            $rows.each(function () {
+                                $eRow = $(this);
+                                var $indexRow = parseInt($eRow.attr('id').substring(3));
+
+                                if ($indexRow == $index / 2) { //đúng row đấy rồi
+                                    var $total = 0;
+                                    var $rowElements = $(this).find("div.destDiv");
+
+                                    $.each($rowElements, function (index, value) {
+                                        var $currentClass = value.className;
+                                        var $weight = $currentClass.substring($currentClass.indexOf("col-md") + 7, $currentClass.indexOf("col-md") + 8);
+                                        $total += parseInt($weight);
+                                    });
+                                    //check total weight
+                                    if ($total + 6 <= 12) {
+                                        var $col6 = $("<div/>").addClass("col-md-6 destDiv select-element");
+
+                                        var $hightLight = $("<div/>").attr('id', 'destDiv');
+                                        $hightLight.css('background-color', '#eee');
+                                        $hightLight.css('height', $hSrcObj + 'px');
+
+                                        $col6.append($hightLight);
+                                        $(this).append($col6);
+                                    }
+                                }
+
+                            });
                         }
                     }
                 }
@@ -82,7 +131,7 @@
                 helper: "clone",
                 hoverClass: "droppable-active",
                 drop: function (event, ui) {
-                   //(".empty-form").remove();
+                    //(".empty-form").remove();
                     var $orig = $(ui.draggable);
                     var $hasSpace = false;
 
