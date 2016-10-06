@@ -15,11 +15,11 @@
     <script src="js/bootstrap-datetimepicker.min.js"></script>
     <style>
         .droppable-active {
-            background-color: #ffe !important;
+            background-color: transparent !important;
         }
 
         .box-edit-highlight {
-            outline: 5px solid rgba(255, 0, 0, 0.275);
+            outline: 5px solid rgba(255, 0, 0, 0.275) !important;
         }
 
         .tools a {
@@ -46,6 +46,12 @@
             $(".draggable").draggable({
                 appendTo: "body",
                 helper: "clone",
+                start : function (event,ui){
+                    var allClass = $(".select-element").each(function () {
+                        $(this).removeClass("box-edit-highlight");
+                    });
+                    $("#cb-choosecolumn").val(6);
+                },
                 drag: function (event, ui) {
                     //return;
                     var $body_offset = $(".form-body").offset();
@@ -83,16 +89,7 @@
                                     $divRow.append($col6);
 
                                     $(".form-body").append($divRow);
-                                }/* else { //exits row i
-                                    var $col6 = $("<div/>").addClass("col-md-6").attr('id', 'col' + $index);
-
-                                    var $hightLight = $("<div/>").attr('id', 'destDiv');
-                                    $hightLight.css('background-color', '#eee');
-                                    $hightLight.css('height', $hSrcObj + 'px');
-
-                                    $col6.append($hightLight);
-                                    $eRow.append($col6);
-                                }*/
+                                }
                             }
                         } else {
                             $rows.each(function () {
@@ -110,7 +107,7 @@
                                     });
                                     //check total weight
                                     if ($total + 6 <= 12 && (ui.position.left - $posX) > $totalWidth) {
-                                        var $col6 = $("<div/>").addClass("col-md-6 destDiv select-element");
+                                        var $col6 = $("<div/>").addClass("col-md-6 destDiv");
 
                                         var $hightLight = $("<div/>").addClass('destDivBlock');
                                         $hightLight.css('background-color', '#eee');
@@ -133,7 +130,7 @@
                                                 && (ui.position.top - $posY) < ($destDivBlock.offset().top - $posY + $destDivBlock.outerHeight())) {
                                                 $destDivBlock.css('background-color', '#eee');
                                             } else {
-                                                $destDivBlock.css('background-color', '#ffe');
+                                                $destDivBlock.css('background-color', 'transparent');
                                             }
                                         });
                                     }
@@ -154,66 +151,20 @@
 
                     if (!$(ui.draggable).hasClass("dropped")) {
                         //tim tat ca cac row
-                        var $el;
-                        $rows = $(".form-body").find("div.row");
-                        if ($rows.length == 0) {
-                            //tao div row
-                            $divRow = $("<div/>").addClass("row");
-
-                            var $col6 = $("<div/>").addClass("col-md-6 select-element");
-                            $el = $orig
-                                .clone()
-                                .addClass("dropped")
-                                .css({ "position": "static", "left": null, "right": null });
-
-                            $col6.append($el);
-                            $divRow.append($col6);
-
-                            $(".form-body").append($divRow);
-                        } else {
-                            var $totalRow = $rows.length;
-                            $rows.each(function (index) {
-                                if ($hasSpace)
-                                    return;
-                                var $rowElements = $(this).find("div.select-element");
-                                //lay ra trong luong cua tat ca cac hang
-                                var $total = 0;
-                                $.each($rowElements, function (index, value) {
-                                    var $currentClass = value.className;
-                                    var $weight = $currentClass.substring($currentClass.indexOf("col-md") + 7, $currentClass.indexOf("col-md") + 8);
-                                    $total += parseInt($weight);
-                                });
-                                //tim ra 1 hang co trong luong < 12
-                                if ($total + 6 <= 12) {
-                                    var $col6 = $("<div/>").addClass("col-md-6 select-element");
-                                    $el = $orig
-                                        .clone()
-                                        .addClass("dropped")
-                                        .css({ "position": "static", "left": null, "right": null });
-
-                                    $col6.append($el);
-                                    $(this).append($col6);
-                                    $hasSpace = true;
-                                } else {
-                                    if (index < $totalRow - 1)
-                                        return;
-
-                                    $divRow = $("<div/>").addClass("row");
-
-                                    var $col6 = $("<div/>").addClass("col-md-6 select-element");
-                                    $el = $orig
-                                        .clone()
-                                        .addClass("dropped")
-                                        .css({ "position": "static", "left": null, "right": null });
-
-                                    $col6.append($el);
-                                    $divRow.append($col6);
-
-                                    $(".form-body").append($divRow);
-                                }
-                            });
-                        }
-
+                        $destDivBlock = $(".form-body").find("div.destDivBlock");
+                        $.each($destDivBlock, function () {
+                            $destDiv = $(this);
+                            $bgColor = $destDiv.css('backgroundColor');
+                            if ($bgColor == 'rgb(238, 238, 238)') {
+                                $el = $orig
+                                    .clone()
+                                    .addClass("dropped")
+                                    .css({ "position": "static", "left": null, "right": null });
+                                $(this).parent().addClass("select-element");
+                                $(this).parent().append($el);
+                                $(this).remove();
+                            }
+                        });
 
                         // update id
                         var id = $orig.find(":input").attr("id");
