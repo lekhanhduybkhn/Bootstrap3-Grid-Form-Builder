@@ -1,0 +1,361 @@
+﻿<!doctype html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Bootstrap 3 Form Builder</title>
+    <link rel="stylesheet" href="css/jquery.ui.theme.css" />
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <link href="css/bootstrap-datetimepicker.css" rel="stylesheet" />
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery.ui.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/beautifyhtml.js"></script>
+    <script src="js/moment.js"></script>
+    <script src="js/bootstrap-datetimepicker.min.js"></script>
+    <style>
+        .droppable-active {
+            background-color: #ffe !important;
+        }
+
+        .box-edit-highlight {
+            outline: 5px solid rgba(255, 0, 0, 0.275);
+        }
+
+        .tools a {
+            cursor: pointer;
+            font-size: 80%;
+        }
+
+        .form-body {
+            min-height: 400px;
+        }
+
+        .draggable {
+            cursor: move;
+        }
+    </style>
+    <script>
+        var $selectElement;
+
+        $(document).ready(function () {
+            setup_draggable();
+        });
+
+        var setup_draggable = function () {
+            $(".draggable").draggable({
+                appendTo: "body",
+                helper: "clone",
+                drag: function (event, ui) {
+                    var $body_offset = $(".form-body").offset();
+                    var $posY = $body_offset.top;
+                    var $posX = $body_offset.left;
+                    console.log($posX + ':' +  $posY);
+                    if (ui.position.left >= $posX && ui.position.top >= $posY) {
+                        //console.log('kéo vào rồi form body roi');
+                        $rows = $(".form-body").find("div.row");
+                        //check neu chua co rows nao
+                        $desDiv = $("#destDiv");
+                        $srcObj = ui.helper;
+                        $hSrcObj = $srcObj.outerHeight() + 35;
+                        $wDest = $(".form-body").outerWidth();
+
+                        if ($rows.length == 0) {
+                            //create div row
+                            $divRow = $("<div/>").addClass("row");
+                            var $col6 = $("<div/>").addClass("col-md-6");
+
+                            var $hightLight = $("<div/>").attr('id', 'destDiv');
+                            $hightLight.css('background-color', '#eee');
+                            $hightLight.css('height', $hSrcObj + 'px');
+
+                            $col6.append($hightLight);
+                            $divRow.append($col6);
+
+                            $(".form-body").append($divRow);
+                        }
+                    }
+                }
+            });
+            $(".droppable").droppable({
+                accept: ".draggable",
+                helper: "clone",
+                hoverClass: "droppable-active",
+                drop: function (event, ui) {
+                   //(".empty-form").remove();
+                    var $orig = $(ui.draggable);
+                    var $hasSpace = false;
+
+                    if (!$(ui.draggable).hasClass("dropped")) {
+                        //tim tat ca cac row
+                        var $el;
+                        $rows = $(".form-body").find("div.row");
+                        if ($rows.length == 0) {
+                            //tao div row
+                            $divRow = $("<div/>").addClass("row");
+
+                            var $col6 = $("<div/>").addClass("col-md-6 select-element");
+                            $el = $orig
+                                .clone()
+                                .addClass("dropped")
+                                .css({ "position": "static", "left": null, "right": null });
+
+                            $col6.append($el);
+                            $divRow.append($col6);
+
+                            $(".form-body").append($divRow);
+                        } else {
+                            var $totalRow = $rows.length;
+                            $rows.each(function (index) {
+                                if ($hasSpace)
+                                    return;
+                                var $rowElements = $(this).find("div.select-element");
+                                //lay ra trong luong cua tat ca cac hang
+                                var $total = 0;
+                                $.each($rowElements, function (index, value) {
+                                    var $currentClass = value.className;
+                                    var $weight = $currentClass.substring($currentClass.indexOf("col-md") + 7, $currentClass.indexOf("col-md") + 8);
+                                    $total += parseInt($weight);
+                                });
+                                //tim ra 1 hang co trong luong < 12
+                                if ($total + 6 <= 12) {
+                                    var $col6 = $("<div/>").addClass("col-md-6 select-element");
+                                    $el = $orig
+                                        .clone()
+                                        .addClass("dropped")
+                                        .css({ "position": "static", "left": null, "right": null });
+
+                                    $col6.append($el);
+                                    $(this).append($col6);
+                                    $hasSpace = true;
+                                } else {
+                                    if (index < $totalRow - 1)
+                                        return;
+
+                                    $divRow = $("<div/>").addClass("row");
+
+                                    var $col6 = $("<div/>").addClass("col-md-6 select-element");
+                                    $el = $orig
+                                        .clone()
+                                        .addClass("dropped")
+                                        .css({ "position": "static", "left": null, "right": null });
+
+                                    $col6.append($el);
+                                    $divRow.append($col6);
+
+                                    $(".form-body").append($divRow);
+                                }
+                            });
+                        }
+
+
+                        // update id
+                        var id = $orig.find(":input").attr("id");
+
+                        if (id) {
+                            id = id.split("-").slice(0, -1).join("-") + "-"
+                                + (parseInt(id.split("-").slice(-1)[0]) + 1)
+
+                            $orig.find(":input").attr("id", id);
+                            $orig.find("label").attr("for", id);
+                        }
+
+                        // tools
+                        $('<p class="tools">\
+						<a class="edit-link">Edit HTML<a> | \
+						<a class="remove-link">Remove</a></p>').appendTo($el);
+
+                    } else {
+                        if ($(this)[0] != $orig.parent()[0]) {
+                            var $el = $orig
+                                .clone()
+                                .css({ "position": "static", "left": null, "right": null })
+                                .appendTo(this);
+                            $orig.remove();
+                        }
+                    }
+                }
+            }).sortable();
+
+        }
+
+        var get_modal = function (content) {
+            var modal = $('<div class="modal" style="overflow: auto;" tabindex="-1">\
+			<div class="modal-dialog">\
+				<div class="modal-content">\
+					<div class="modal-header">\
+						<a type="button" class="close"\
+							data-dismiss="modal" aria-hidden="true">&times;</a>\
+						<h4 class="modal-title">Edit HTML</h4>\
+					</div>\
+					<div class="modal-body ui-front">\
+						<textarea class="form-control" \
+							style="min-height: 200px; margin-bottom: 10px;\
+							font-family: Monaco, Fixed">'+ content + '</textarea>\
+						<button class="btn btn-success">Update</button>\
+					</div>\
+				</div>\
+			</div>\
+			</div>').appendTo(document.body);
+
+            return modal;
+        };
+
+        $(document).on("click", ".edit-link", function (ev) {
+            var $el = $(this).parent().parent();
+            var $el_copy = $el.clone();
+
+            var $edit_btn = $el_copy.find(".edit-link").parent().remove();
+
+            var $modal = get_modal(html_beautify($el_copy.html())).modal("show");
+            $modal.find(":input:first").focus();
+            $modal.find(".btn-success").click(function (ev2) {
+                var html = $modal.find("textarea").val();
+                if (!html) {
+                    $el.remove();
+                } else {
+                    $el.html(html);
+                    $edit_btn.appendTo($el);
+                }
+                $modal.modal("hide");
+                return false;
+            })
+        });
+
+        $(document).on("click", ".remove-link", function (ev) {
+            $(this).parent().parent().parent().remove();
+        });
+
+        $(document).on("click", ".select-element", function (ev) {
+            var $el = $(this);
+            var allClass = $(".select-element").each(function () {
+                $(this).removeClass("box-edit-highlight");
+            });
+
+            $el.addClass("box-edit-highlight");
+            init_propertive(1, 1);
+            $selectElement = $el;
+        });
+
+        var init_propertive = function (id, type) {
+
+        };
+
+        $(document).on("click", "#btnCancel", function (ev) {
+
+        });
+
+        $(document).on("change", "#cb-choosecolumn", function (ev) {
+            var $temp = $(this).val();
+            if ($selectElement) {
+                var $currentClass = $selectElement.attr('class');
+                var $colClass = '';
+                var $numberClass = $currentClass.split(" ");
+
+                $.each($currentClass.split(" "), function (index, value) {
+                    if (value.indexOf("col-md") != -1) {
+                        $colClass = value;
+                    }
+                });
+
+                $selectElement.removeClass($colClass);
+                $colClass = $colClass.split("-").slice(0, -1).join("-") + "-" + $temp;
+                $selectElement.addClass($colClass);
+            }
+        });
+
+        $(function () {
+            $('#datetimepicker1').datetimepicker({
+                format: 'DD/MM/YYYY'
+            });
+        });
+    </script>
+</head>
+<body style="background-color: #ddd;">
+    <nav class="navbar navbar-default navbar-fixed" role="navigation">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Bootstrap 3 Form Builder</a>
+        </div>
+    </nav>
+    <div style="margin-top: -20px;">
+        <div class="row">
+            <div class="col-md-2" style="padding: 0px 10px 30px 30px; background-color: #fff;">
+                <h3>Elements</h3>
+                <form role="form">
+                    <div class="form-group draggable">
+                        <label for="input-text-1">Text Input</label>
+                        <input type="email" readonly class="form-control" id="input-id-1" placeholder="Enter email">
+                        <p class="help-block">Example block-level help text here.</p>
+                    </div>
+                    <div class="form-group draggable">
+                        <label for="input-password-1">Choose date</label>
+                        <div class='input-group date' id='datetimepicker1'>
+                            <input type='text' class="form-control" />
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                        <p class="help-block">Example block-level help text here.</p>
+                    </div>
+                    <div class="form-group draggable">
+                        <label for="select-1">Select</label>
+                        <select class="form-control" id="select-1">
+                            <option value="Option 1">Option 1</option>
+                            <option value="Option 2">Option 2</option>
+                            <option value="Option 3">Option 3</option>
+                        </select>
+                        <p class="help-block">Example block-level help text here.</p>
+                    </div>
+                    <div class="form-group draggable">
+                        <label for="input-file-1">File input</label>
+                        <input type="file" id="input-file-1">
+                        <p class="help-block">Example block-level help text here.</p>
+                    </div>
+                    <div class="checkbox draggable">
+                        <label>
+                            <input type="checkbox"> <span>Check me out</span>
+                        </label>
+                    </div>
+                    <div class="form-group draggable" style="padding-right: 20px;">
+                        <button type="submit" class="btn btn-default">Submit</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-8" style="padding: 10px;">
+                <div style="background-color: #fff; border-radius: 5px; padding: 20px;
+						box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175); ">
+                    <div class="text-muted empty-form text-center" style="font-size: 24px;">Drag & Drop elements to build form.</div>
+                    <div class="form-body droppable">
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2" style="background-color: #fff;">
+
+                <div class='form-group col-md-12'>
+                    <label class='control-label'>Width column number</label>
+                    <select class='form-control' id="cb-choosecolumn">
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6" selected>6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
+                    <label class='control-label'>Label Text</label> <input class='form-control' type='text' name='label' id='label'>
+                    <label class='control-label'>Placeholder</label> <input type='text' name='placeholder' id='placeholder' class='form-control'>
+                    <label class='control-label'>Help Text</label> <input type='text' name='help' id='help' class='form-control'>
+                    <hr />
+                    <button id="btnSave" class='btn btn-info'>Save</button><button id="btnCancel" class='btn btn-danger'>Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
