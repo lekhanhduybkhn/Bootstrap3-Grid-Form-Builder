@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 
 <html lang="en">
 <head>
@@ -97,7 +97,7 @@
                             $rows.each(function () {
                                 $eRow = $(this);
                                 var $indexRow = parseInt($eRow.attr('id').substring(3));
-                                
+
                                 if ($indexRow == parseInt($diffY / $hSrcObj)) { //đúng row đấy rồi
                                     var $total = 0;
                                     var $rowElements = $(this).find("div.destDiv");
@@ -160,18 +160,19 @@
                                                             $(this).remove();
                                                         }
                                                     });
-                                                    
-                                                    var $rows = $('#row' + $indexRow);
-                                                    for (var begin = 0; begin < $featureBlog ; begin++) {
-                                                        if (begin < currentIndex) {
-                                                            $rows.append($desDivOther[begin]);
-                                                        } else if (begin == currentIndex) {
-                                                            $rows.append($desDiv);
-                                                        } else {
-                                                            $rows.append($desDivOther[begin-1]);
+                                                    if ($desDiv != null) {
+                                                        var $rows = $('#row' + $indexRow);
+                                                        for (var begin = 0; begin < $featureBlog ; begin++) {
+                                                            if (begin < currentIndex) {
+                                                                $rows.append($desDivOther[begin]);
+                                                            } else if (begin == currentIndex) {
+                                                                $rows.append($desDiv);
+                                                            } else {
+                                                                $rows.append($desDivOther[begin - 1]);
+                                                            }
                                                         }
                                                     }
-                                                } 
+                                                }
                                             }
                                         }
                                     }
