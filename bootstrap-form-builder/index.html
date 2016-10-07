@@ -69,8 +69,6 @@
 
                         var $diffY = ui.position.top - $posY;
                         var $numberRow = parseInt($diffY / $hSrcObj) + 1;
-                        // var $index = parseInt((ui.position.left - $posX) / ($wDest / 2)) + 2 * ($numberRow - 1);
-                        // console.log($index);
                         //lay ra tat ca cac row
                         var $rows = $(".form-body").find("div.row");
                         //neu chua co row nao
@@ -142,33 +140,37 @@
                                             }
                                         }
                                     } else {
+                                        
                                         var $rowElements = $(this).find("div.destDiv");
                                         var $featureBlog = $rowElements.length;
                                         var $distance = $wDest / $featureBlog;
-                                        for (var ii = 0 ; ii < $featureBlog ; ii++) {
-                                            if ((ui.position.left - $posX) >= (ii * $distance) && (ui.position.left - $posX) <= ((ii + 1) * $distance)) {
-                                                if ((currentIndex != ii)) {
-                                                    currentIndex = ii;
-                                                    var $desDiv = null;
-                                                    var $desDivOther = [];
-                                                    $.each($rowElements, function (index, value) {
-                                                        if ($(this).find("div.destDivBlock").length > 0) {
-                                                            $desDiv = $(this).clone();
-                                                            $(this).remove();
-                                                        } else {
-                                                            $desDivOther.push($(this).clone());
-                                                            $(this).remove();
-                                                        }
-                                                    });
-                                                    if ($desDiv != null) {
-                                                        var $rows = $('#row' + $indexRow);
-                                                        for (var begin = 0; begin < $featureBlog ; begin++) {
-                                                            if (begin < currentIndex) {
-                                                                $rows.append($desDivOther[begin]);
-                                                            } else if (begin == currentIndex) {
-                                                                $rows.append($desDiv);
+                                        if ($(this).find("div.destDivBlock").length > 0) {
+                                            console.log('tao lai');
+                                            for (var ii = 0 ; ii < $featureBlog ; ii++) {
+                                                if ((ui.position.left - $posX) >= (ii * $distance) && (ui.position.left - $posX) <= ((ii + 1) * $distance)) {
+                                                    if ((currentIndex != ii)) {
+                                                        currentIndex = ii;
+                                                        var $desDiv = null;
+                                                        var $desDivOther = [];
+                                                        $.each($rowElements, function (index, value) {
+                                                            if ($(this).find("div.destDivBlock").length > 0) {
+                                                                $desDiv = $(this).clone();
+                                                                $(this).remove();
                                                             } else {
-                                                                $rows.append($desDivOther[begin - 1]);
+                                                                $desDivOther.push($(this).clone());
+                                                                $(this).remove();
+                                                            }
+                                                        });
+                                                        if ($desDiv != null) {
+                                                            var $rows = $('#row' + $indexRow);
+                                                            for (var begin = 0; begin < $featureBlog ; begin++) {
+                                                                if (begin < currentIndex) {
+                                                                    $rows.append($desDivOther[begin]);
+                                                                } else if (begin == currentIndex) {
+                                                                    $rows.append($desDiv);
+                                                                } else {
+                                                                    $rows.append($desDivOther[begin - 1]);
+                                                                }
                                                             }
                                                         }
                                                     }
@@ -176,22 +178,11 @@
                                             }
                                         }
                                     }
-
-                                    /*
-                                    if ($featureLength <= 4) {
-                                        console.log($featureLength);
+                                } else {
+                                    //nếu mà kéo ra khỏi row đấy
+                                    if ($(this).find("div.destDivBlock").length > 0) {
+                                        console.log($indexRow);
                                     }
-                                    //check total weight
-                                    if ($featureLength <= 4 && (ui.position.left - $posX) > $totalWidth) {
-                                        var $col6 = $("<div/>").addClass("col-md-6 destDiv");
-
-                                        var $hightLight = $("<div/>").addClass('destDivBlock');
-                                        $hightLight.css('background-color', '#eee');
-                                        $hightLight.css('height', $hSrcObj + 'px');
-
-                                        $col6.append($hightLight);
-                                        $(this).append($col6);
-                                    }*/
                                 }
                                 //for hightlight
 
