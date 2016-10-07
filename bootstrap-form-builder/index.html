@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 
 <html lang="en">
 <head>
@@ -37,6 +37,7 @@
     </style>
     <script>
         var $selectElement;
+        var currentIndex = 0;
 
         $(document).ready(function () {
             setup_draggable();
@@ -46,7 +47,7 @@
             $(".draggable").draggable({
                 appendTo: "body",
                 helper: "clone",
-                start : function (event,ui){
+                start: function (event, ui) {
                     var allClass = $(".select-element").each(function () {
                         $(this).removeClass("box-edit-highlight");
                     });
@@ -57,18 +58,19 @@
                     var $body_offset = $(".form-body").offset();
                     var $posY = $body_offset.top;
                     var $posX = $body_offset.left;
-                    //console.log($posX + ':' + $posY);
+
                     if (ui.position.left >= $posX && ui.position.top >= $posY) {
-                        //console.log('kéo vào rồi form body roi');
+
                         var $desDiv = $("#destDiv");
                         var $srcObj = ui.helper;
+
                         var $hSrcObj = $srcObj.outerHeight() + 35;
                         var $wDest = $(".form-body").outerWidth();
 
                         var $diffY = ui.position.top - $posY;
                         var $numberRow = parseInt($diffY / $hSrcObj) + 1;
-                        var $index = parseInt((ui.position.left - $posX) / ($wDest / 2)) + 2 * ($numberRow - 1);
-                       // console.log($index);
+                        // var $index = parseInt((ui.position.left - $posX) / ($wDest / 2)) + 2 * ($numberRow - 1);
+                        // console.log($index);
                         //lay ra tat ca cac row
                         var $rows = $(".form-body").find("div.row");
                         //neu chua co row nao
@@ -79,7 +81,7 @@
                                 if (!$eRow) { //not exits row i
                                     $divRow = $("<div/>").addClass("row").attr('id', 'row' + i);
 
-                                    var $col6 = $("<div/>").addClass("col-md-6 destDiv")/*.attr('id', 'col' + $index)*/;
+                                    var $col6 = $("<div/>").addClass("col-md-12 destDiv")/*.attr('id', 'col' + $index)*/;
 
                                     var $hightLight = $("<div/>").addClass('destDivBlock');
                                     $hightLight.css('background-color', '#eee');
@@ -95,7 +97,8 @@
                             $rows.each(function () {
                                 $eRow = $(this);
                                 var $indexRow = parseInt($eRow.attr('id').substring(3));
-                                if ($indexRow == parseInt($index/2)) { //đúng row đấy rồi
+                                
+                                if ($indexRow == parseInt($diffY / $hSrcObj)) { //đúng row đấy rồi
                                     var $total = 0;
                                     var $rowElements = $(this).find("div.destDiv");
                                     var $totalWidth = 0;
@@ -105,8 +108,80 @@
                                         $total += parseInt($weight);
                                         $totalWidth += $(this).outerWidth();
                                     });
+                                    var $featureLength = $rowElements.length;
+                                    $destDivBlocks = $(this).find("div.destDivBlock");
+                                    if ($destDivBlocks.length == 0 && $featureLength < 4) {
+                                        var $featureBlog = $featureLength + 1;
+                                        var $distance = $wDest / $featureBlog;
+                                        for (var $i = 0 ; $i < $featureBlog ; $i++) {
+                                            if ((ui.position.left - $posX) >= ($i * $distance) && (ui.position.left - $posX) <= (($i + 1) * $distance)) {
+                                                //resize những cái đã có
+                                                $.each($rowElements, function (index, value) {
+                                                    var $currentClass = value.className.split(" ");
+                                                    var $colClass = '';
+                                                    $.each($currentClass, function () {
+                                                        if (this.trim().indexOf("col-md") > -1) {
+                                                            $colClass = this.trim();
+                                                        }
+                                                    });
+                                                    $(this).removeClass($colClass).addClass("col-md-" + (12 / $featureBlog));
+                                                });
+                                                //sắp xếp và chèn thêm các block div hover
+                                                var $col6 = $("<div/>").addClass("col-md-" + (12 / $featureBlog) + " destDiv");
+
+                                                var $hightLight = $("<div/>").addClass('destDivBlock');
+                                                $hightLight.css('background-color', '#eee');
+                                                $hightLight.css('height', $hSrcObj + 'px');
+
+                                                $col6.append($hightLight);
+                                                if ($i == 0) {
+                                                    $(this).prepend($col6);
+                                                    currentIndex = 0;
+                                                }
+                                                //console.log($i);
+                                            }
+                                        }
+                                    } else {
+                                        var $rowElements = $(this).find("div.destDiv");
+                                        var $featureBlog = $rowElements.length;
+                                        var $distance = $wDest / $featureBlog;
+                                        for (var ii = 0 ; ii < $featureBlog ; ii++) {
+                                            if ((ui.position.left - $posX) >= (ii * $distance) && (ui.position.left - $posX) <= ((ii + 1) * $distance)) {
+                                                if ((currentIndex != ii)) {
+                                                    currentIndex = ii;
+                                                    var $desDiv = null;
+                                                    var $desDivOther = [];
+                                                    $.each($rowElements, function (index, value) {
+                                                        if ($(this).find("div.destDivBlock").length > 0) {
+                                                            $desDiv = $(this).clone();
+                                                            $(this).remove();
+                                                        } else {
+                                                            $desDivOther.push($(this).clone());
+                                                            $(this).remove();
+                                                        }
+                                                    });
+                                                    
+                                                    var $rows = $('#row' + $indexRow);
+                                                    for (var begin = 0; begin < $featureBlog ; begin++) {
+                                                        if (begin < currentIndex) {
+                                                            $rows.append($desDivOther[begin]);
+                                                        } else if (begin == currentIndex) {
+                                                            $rows.append($desDiv);
+                                                        } else {
+                                                            $rows.append($desDivOther[begin-1]);
+                                                        }
+                                                    }
+                                                } 
+                                            }
+                                        }
+                                    }
+
+                                    /*
+                                    if ($featureLength <= 4) {
+                                        console.log($featureLength);
+                                    }
                                     //check total weight
-                                    if ($total + 6 <= 12 && (ui.position.left - $posX) > $totalWidth) {
+                                    if ($featureLength <= 4 && (ui.position.left - $posX) > $totalWidth) {
                                         var $col6 = $("<div/>").addClass("col-md-6 destDiv");
 
                                         var $hightLight = $("<div/>").addClass('destDivBlock');
@@ -115,9 +190,10 @@
 
                                         $col6.append($hightLight);
                                         $(this).append($col6);
-                                    }
+                                    }*/
                                 }
                                 //for hightlight
+
                                 var $rowElements = $(this).find("div.destDiv");
                                 $.each($rowElements, function (index, value) {
                                     $destDivBlocks = $(this).find("div.destDivBlock");
@@ -135,6 +211,7 @@
                                         });
                                     }
                                 });
+
                             });
                         }
                     }
@@ -305,7 +382,7 @@
                         <input type="email" readonly class="form-control" id="input-id-1" placeholder="Enter email">
                         <p class="help-block">Example block-level help text here.</p>
                     </div>
-                    <div class="form-group draggable">
+                    <div class="form-group draggable datepicker-control">
                         <label for="input-password-1">Choose date</label>
                         <div class='input-group date' id='datetimepicker1'>
                             <input type='text' class="form-control" />
