@@ -325,26 +325,28 @@
 
         $(document).on("click", ".remove-link", function (ev) {
             $parent = $(this).parent().parent().parent();
-            $(this).parent().parent().parent().remove();
-
             //resize row
             $row = $parent.parent();
+            //remove div
+            $(this).parent().parent().parent().remove();
 
             var $rowElements = $row.find("div.destDiv");
             $featureBlog = $rowElements.length;
             if ($featureBlog == 0)
-                $(this).parent().parent().parent().parent().parent().remove();
+                $row.remove();
 
-            $.each($rowElements, function (index, value) {
-                var $currentClass = value.className.split(" ");
-                var $colClass = '';
-                $.each($currentClass, function () {
-                    if (this.trim().indexOf("col-md") > -1) {
-                        $colClass = this.trim();
-                    }
+            if ($featureBlog > 0) {
+                $.each($rowElements, function (index, value) {
+                    var $currentClass = value.className.split(" ");
+                    var $colClass = '';
+                    $.each($currentClass, function () {
+                        if (this.trim().indexOf("col-md") > -1) {
+                            $colClass = this.trim();
+                        }
+                    });
+                    $(this).removeClass($colClass).addClass("col-md-" + (12 / $featureBlog));
                 });
-                $(this).removeClass($colClass).addClass("col-md-" + (12 / $featureBlog));
-            });
+            }
            
         });
 
