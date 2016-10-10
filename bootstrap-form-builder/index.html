@@ -181,7 +181,22 @@
                                 } else {
                                     //nếu mà kéo ra khỏi row đấy
                                     if ($(this).find("div.destDivBlock").length > 0) {
-                                        console.log($indexRow);
+                                        var $rowElements = $(this).find("div.destDiv");
+                                        $featureBlog = $rowElements.length - 1;
+                                        //remove destDivBlock
+                                        $desDivBlock = $(this).find("div.destDivBlock");
+                                        $desDivBlock.parent().remove();
+
+                                        $.each($rowElements, function (index, value) {
+                                            var $currentClass = value.className.split(" ");
+                                            var $colClass = '';
+                                            $.each($currentClass, function () {
+                                                if (this.trim().indexOf("col-md") > -1) {
+                                                    $colClass = this.trim();
+                                                }
+                                            });
+                                            $(this).removeClass($colClass).addClass("col-md-" + (12 / $featureBlog));
+                                        });
                                     }
                                 }
                                 //for hightlight
@@ -309,7 +324,28 @@
         });
 
         $(document).on("click", ".remove-link", function (ev) {
+            $parent = $(this).parent().parent().parent();
             $(this).parent().parent().parent().remove();
+
+            //resize row
+            $row = $parent.parent();
+
+            var $rowElements = $row.find("div.destDiv");
+            $featureBlog = $rowElements.length;
+            if ($featureBlog == 0)
+                $(this).parent().parent().parent().parent().parent().remove();
+
+            $.each($rowElements, function (index, value) {
+                var $currentClass = value.className.split(" ");
+                var $colClass = '';
+                $.each($currentClass, function () {
+                    if (this.trim().indexOf("col-md") > -1) {
+                        $colClass = this.trim();
+                    }
+                });
+                $(this).removeClass($colClass).addClass("col-md-" + (12 / $featureBlog));
+            });
+           
         });
 
         $(document).on("click", ".select-element", function (ev) {
