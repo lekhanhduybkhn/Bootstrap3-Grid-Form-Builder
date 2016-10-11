@@ -13,6 +13,8 @@
     <script src="js/beautifyhtml.js"></script>
     <script src="js/moment.js"></script>
     <script src="js/bootstrap-datetimepicker.min.js"></script>
+    <script src="js/underscore.js"></script>
+    <script src="js/backbone.js"></script>
     <style>
         .droppable-active {
             background-color: transparent !important;
@@ -41,6 +43,52 @@
 
         $(document).ready(function () {
             setup_draggable();
+
+            //load json input
+            loadJSON('js/data/input.json', function (response) {
+                // Parse JSON string into object
+                var dataJson = JSON.parse(response);
+                for (var index = 0; index < dataJson.length; index++) {
+                    var dataJsonObject = dataJson[index];
+                    var title = dataJsonObject.title;
+                    var fileNameTemple = title.split(' ').join('').toString().toLowerCase();
+                    
+                    loadHtmlTemplate('js/teamplate/' + fileNameTemple + '.html', function (response) {
+                        console.log(response);
+                    });
+                    
+                }
+            });
+
+            loadHtmlTemplate('js/teamplate/button.html', function (response) {
+                console.log(response);
+            });
+
+            var Person = Backbone.Model.extend({
+                defaults: {
+                    name: 'Guest Worker',
+                    age: 23,
+                    occupation: 'worker'
+                }
+            });
+
+            var PersonView = Backbone.View.extend({
+                tagName: 'li',
+
+                my_template: _.template("<strong><%= name %></strong> (<%= age %>) - <%= occupation %>"),
+
+                initialize: function () {
+                    this.render();
+                },
+
+                render: function () {
+                    this.$el.html(this.my_template(this.model.toJSON()));
+                }
+            });
+
+             var person = new Person;
+             var personView = new PersonView({ model: person });
+             $(document.body).append(personView.el); 
         });
 
         var setup_draggable = function () {
@@ -84,7 +132,9 @@
                                     var $hightLight = $("<div/>").addClass('destDivBlock');
                                     $hightLight.css('background-color', '#eee');
                                     $hightLight.css('height', $hSrcObj + 'px');
-
+                                    $hightLight.css('outline-color','#ddddd');
+                                    $hightLight.css('outline-style','dashed');
+                                    $hightLight.css('outline-width', '1px');
                                     $col6.append($hightLight);
                                     $divRow.append($col6);
 
@@ -130,6 +180,9 @@
                                                 var $hightLight = $("<div/>").addClass('destDivBlock');
                                                 $hightLight.css('background-color', '#eee');
                                                 $hightLight.css('height', $hSrcObj + 'px');
+                                                $hightLight.css('outline-width', '1px');
+                                                $hightLight.css('outline-color', '#ddddd');
+                                                $hightLight.css('outline-style', 'dashed');
 
                                                 $col6.append($hightLight);
                                                 if ($i == 0) {
@@ -393,6 +446,34 @@
                 format: 'DD/MM/YYYY'
             });
         });
+
+        function loadJSON(fileName,callback) {
+
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/json");
+            xobj.open('GET', fileName, true); // Replace 'my_data' with the path to your file
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                    callback(xobj.responseText);
+                }
+            };
+            xobj.send(null);
+        }
+
+        function loadHtmlTemplate(fileName, callback) {
+
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/json");
+            xobj.open('GET', fileName, true); // Replace 'my_data' with the path to your file
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                    callback(xobj.responseText);
+                }
+            };
+            xobj.send(null);
+        }
     </script>
 </head>
 <body style="background-color: #ddd;">
