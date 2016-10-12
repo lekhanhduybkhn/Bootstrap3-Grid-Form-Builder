@@ -6,6 +6,7 @@
     <title>Bootstrap 3 Form Builder</title>
     <link rel="stylesheet" href="css/jquery.ui.theme.css" />
     <link rel="stylesheet" href="css/bootstrap.css" />
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
     <link href="css/bootstrap-datetimepicker.css" rel="stylesheet" />
     <script src="js/jquery.min.js"></script>
     <script src="js/jquery.ui.min.js"></script>
@@ -38,58 +39,91 @@
         }
     </style>
     <script>
+        var ItemViewInput= Backbone.Model.extend({
+            initialize: function () {
+                //alert("Welcome to this world");
+            }
+        });
+
         var $selectElement;
         var currentIndex = 0;
 
         $(document).ready(function () {
-            setup_draggable();
+            //after setup component begin dragables
+            setup_component();
+        });
 
+        
+
+        var setup_component = function () {
+            //set up element
             //load json input
             loadJSON('js/data/input.json', function (response) {
                 // Parse JSON string into object
                 var dataJson = JSON.parse(response);
-                for (var index = 0; index < dataJson.length; index++) {
+                for (var index = 0; index < 5 ; index++) {
                     var dataJsonObject = dataJson[index];
                     var title = dataJsonObject.title;
+                    //file name template
                     var fileNameTemple = title.split(' ').join('').toString().toLowerCase();
-                    
-                    loadHtmlTemplate('js/teamplate/' + fileNameTemple + '.html', function (response) {
-                        console.log(response);
+                    var fiels = dataJsonObject.fields;
+                    //create view object
+                    var itemViewInput = new ItemViewInput();
+                    itemViewInput.set({ label: title });
+
+                    $.each(fiels, function (key, value) {
+                        var fielsValue = value;
+                        $.each(fielsValue, function (keyChild, valueChild) {
+                            if (keyChild == 'value') {
+                                if (valueChild.constructor === Array) {
+                                    for (var i = 0; i < valueChild.length ; i++) {
+                                        if (valueChild[i].selected) {
+                                            itemViewInput.set(key.toString(), valueChild[i].value);
+                                        }
+                                    }
+                                } else {
+                                    if (key.toString() == 'id') {
+                                        itemViewInput.set(key.toString(), valueChild + '-id-0');
+                                    } else {
+                                        itemViewInput.set(key.toString(), valueChild);
+                                    }
+                                }
+                            }
+                            
+                        });
+
                     });
+                    console.log(itemViewInput);
                     
+                    loadHtmlTemplate('js/teamplate/' + fileNameTemple  + '.html', function (response) {
+                        console.log(response);
+
+                        var PersonView = Backbone.View.extend({
+                            tagName: 'div',
+
+                            my_template: _.template(response),
+
+                            initialize: function () {
+                                this.render();
+                            },
+
+                            render: function () {
+                                this.$el.addClass('draggable ui-draggable');
+                                //this.$el.addClass('component');
+                                this.$el.html(this.my_template(this.model.toJSON()));
+                            }
+                        });
+                      
+                        var personView = new PersonView({ model: itemViewInput });
+                        $('#formInput').append(personView.el);
+                        
+                    });
+
                 }
+
+                setup_draggable();
             });
-
-            loadHtmlTemplate('js/teamplate/button.html', function (response) {
-                console.log(response);
-            });
-
-            var Person = Backbone.Model.extend({
-                defaults: {
-                    name: 'Guest Worker',
-                    age: 23,
-                    occupation: 'worker'
-                }
-            });
-
-            var PersonView = Backbone.View.extend({
-                tagName: 'li',
-
-                my_template: _.template("<strong><%= name %></strong> (<%= age %>) - <%= occupation %>"),
-
-                initialize: function () {
-                    this.render();
-                },
-
-                render: function () {
-                    this.$el.html(this.my_template(this.model.toJSON()));
-                }
-            });
-
-             var person = new Person;
-             var personView = new PersonView({ model: person });
-             $(document.body).append(personView.el); 
-        });
+        }
 
         var setup_draggable = function () {
             $(".draggable").draggable({
@@ -462,17 +496,12 @@
         }
 
         function loadHtmlTemplate(fileName, callback) {
-
             var xobj = new XMLHttpRequest();
-            xobj.overrideMimeType("application/json");
-            xobj.open('GET', fileName, true); // Replace 'my_data' with the path to your file
-            xobj.onreadystatechange = function () {
-                if (xobj.readyState == 4 && xobj.status == "200") {
-                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                    callback(xobj.responseText);
-                }
-            };
+            xobj.open('GET', fileName, false);
             xobj.send(null);
+            if (xobj.status === 200) {
+                callback(xobj.responseText);
+            }
         }
     </script>
 </head>
@@ -487,8 +516,8 @@
         <div class="row">
             <div class="col-md-2" style="padding: 0px 10px 30px 30px; background-color: #fff;">
                 <h3>Elements</h3>
-                <form role="form">
-                    <div class="form-group draggable">
+                <form class="form" id="formInput">
+                    <!--<div class="form-group draggable">
                         <label for="input-text-1">Text Input</label>
                         <input type="email" readonly class="form-control" id="input-id-1" placeholder="Enter email">
                         <p class="help-block">Example block-level help text here.</p>
@@ -524,7 +553,7 @@
                     </div>
                     <div class="form-group draggable" style="padding-right: 20px;">
                         <button type="submit" class="btn btn-default">Submit</button>
-                    </div>
+                    </div>-->
                 </form>
             </div>
             <div class="col-md-8" style="padding: 10px;">
