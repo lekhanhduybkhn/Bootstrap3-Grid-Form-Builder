@@ -1,0 +1,58 @@
+﻿[
+  {
+    "title": "Panel",
+    "fields": {
+      "id": {
+        "label": "ID / Name",
+        "type": "input",
+        "value": "panel"
+      },
+      "panel_title": {
+        "label": "Panel title",
+        "type": "input",
+        "value": "Panel title"
+      },
+      "panel_footer": {
+        "label": "Panel footer",
+        "type": "input",
+        "value": "Panel footer"
+      },
+      "panel_style": {
+        "label": "Panel style",
+        "type": "select",
+        "value": [
+          {
+            "value": "panel-default",
+            "label": "Default",
+            "selected": true
+          },
+          {
+            "value": "panel-primary",
+            "label": "Primary",
+            "selected": false
+          },
+          {
+            "value": "panel-success",
+            "label": "Success",
+            "selected": false
+          },
+          {
+            "value": "panel-Info",
+            "label": "Info",
+            "selected": false
+          },
+          {
+            "value": "panel-warning",
+            "label": "Warning",
+            "selected": false
+          },
+          {
+            "value": "panel-danger",
+            "label": "Danger",
+            "selected": false
+          }
+        ]
+      }
+    }
+  }
+]

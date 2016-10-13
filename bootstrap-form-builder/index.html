@@ -37,9 +37,16 @@
         .draggable {
             cursor: move;
         }
+
+        .propertief {
+            position: absolute;
+            float: right;
+            top: 0px;
+            right: 0px;
+        }
     </style>
     <script>
-        var ItemViewInput= Backbone.Model.extend({
+        var ItemViewInput = Backbone.Model.extend({
             initialize: function () {
                 //alert("Welcome to this world");
             }
@@ -50,18 +57,17 @@
 
         $(document).ready(function () {
             //after setup component begin dragables
-            setup_component();
+            setup_component('panel.json');
+           // setup_component('input.json');
         });
 
-        
-
-        var setup_component = function () {
+        var setup_component = function (filename) {
             //set up element
             //load json input
-            loadJSON('js/data/input.json', function (response) {
+            loadJSON('js/data/' + filename, function (response) {
                 // Parse JSON string into object
                 var dataJson = JSON.parse(response);
-                for (var index = 0; index < 5 ; index++) {
+                for (var index = 0; index < dataJson.length ; index++) {
                     var dataJsonObject = dataJson[index];
                     var title = dataJsonObject.title;
                     //file name template
@@ -89,16 +95,16 @@
                                     }
                                 }
                             }
-                            
+
                         });
 
                     });
                     console.log(itemViewInput);
-                    
-                    loadHtmlTemplate('js/teamplate/' + fileNameTemple  + '.html', function (response) {
+
+                    loadHtmlTemplate('js/teamplate/' + fileNameTemple + '.html', function (response) {
                         console.log(response);
 
-                        var PersonView = Backbone.View.extend({
+                        var ItemView = Backbone.View.extend({
                             tagName: 'div',
 
                             my_template: _.template(response),
@@ -113,10 +119,10 @@
                                 this.$el.html(this.my_template(this.model.toJSON()));
                             }
                         });
-                      
-                        var personView = new PersonView({ model: itemViewInput });
-                        $('#formInput').append(personView.el);
-                        
+
+                        var itemView = new ItemView({ model: itemViewInput });
+                        $('#formInput').append(itemView.el);
+
                     });
 
                 }
@@ -166,8 +172,8 @@
                                     var $hightLight = $("<div/>").addClass('destDivBlock');
                                     $hightLight.css('background-color', '#eee');
                                     $hightLight.css('height', $hSrcObj + 'px');
-                                    $hightLight.css('outline-color','#ddddd');
-                                    $hightLight.css('outline-style','dashed');
+                                    $hightLight.css('outline-color', '#ddddd');
+                                    $hightLight.css('outline-style', 'dashed');
                                     $hightLight.css('outline-width', '1px');
                                     $col6.append($hightLight);
                                     $divRow.append($col6);
@@ -227,7 +233,7 @@
                                             }
                                         }
                                     } else {
-                                        
+
                                         var $rowElements = $(this).find("div.destDiv");
                                         var $featureBlog = $rowElements.length;
                                         var $distance = $wDest / $featureBlog;
@@ -434,7 +440,7 @@
                     $(this).removeClass($colClass).addClass("col-md-" + (12 / $featureBlog));
                 });
             }
-           
+
         });
 
         $(document).on("click", ".select-element", function (ev) {
@@ -481,7 +487,7 @@
             });
         });
 
-        function loadJSON(fileName,callback) {
+        function loadJSON(fileName, callback) {
 
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
@@ -513,82 +519,94 @@
         </div>
     </nav>
     <div style="margin-top: -20px;">
-        <div class="row">
-            <div class="col-md-2" style="padding: 0px 10px 30px 30px; background-color: #fff;">
-                <h3>Elements</h3>
-                <form class="form" id="formInput">
-                    <!--<div class="form-group draggable">
-                        <label for="input-text-1">Text Input</label>
-                        <input type="email" readonly class="form-control" id="input-id-1" placeholder="Enter email">
-                        <p class="help-block">Example block-level help text here.</p>
+        <div>
+            <div style="position:relative">
+                <div class="row">
+                    <div class="col-md-2" style="padding: 0px 10px 30px 30px; background-color: #fff;">
+                        <h3>Elements</h3>
+                        <form class="form" id="formInput">
+                            <!--<div class="form-group draggable">
+                                <label for="input-text-1">Text Input</label>
+                                <input type="email" readonly class="form-control" id="input-id-1" placeholder="Enter email">
+                                <p class="help-block">Example block-level help text here.</p>
+                            </div>
+                            <div class="form-group draggable datepicker-control">
+                                <label for="input-password-1">Choose date</label>
+                                <div class='input-group date' id='datetimepicker1'>
+                                    <input type='text' class="form-control" />
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                                </div>
+                                <p class="help-block">Example block-level help text here.</p>
+                            </div>
+                            <div class="form-group draggable">
+                                <label for="select-1">Select</label>
+                                <select class="form-control" id="select-1">
+                                    <option value="Option 1">Option 1</option>
+                                    <option value="Option 2">Option 2</option>
+                                    <option value="Option 3">Option 3</option>
+                                </select>
+                                <p class="help-block">Example block-level help text here.</p>
+                            </div>
+                            <div class="form-group draggable">
+                                <label for="input-file-1">File input</label>
+                                <input type="file" id="input-file-1">
+                                <p class="help-block">Example block-level help text here.</p>
+                            </div>
+                            <div class="checkbox draggable">
+                                <label>
+                                    <input type="checkbox"> <span>Check me out</span>
+                                </label>
+                            </div>
+                            <div class="form-group draggable" style="padding-right: 20px;">
+                                <button type="submit" class="btn btn-default">Submit</button>
+                            </div>-->
+                        </form>
                     </div>
-                    <div class="form-group draggable datepicker-control">
-                        <label for="input-password-1">Choose date</label>
-                        <div class='input-group date' id='datetimepicker1'>
-                            <input type='text' class="form-control" />
-                            <span class="input-group-addon">
-                                <span class="glyphicon glyphicon-calendar"></span>
-                            </span>
-                        </div>
-                        <p class="help-block">Example block-level help text here.</p>
-                    </div>
-                    <div class="form-group draggable">
-                        <label for="select-1">Select</label>
-                        <select class="form-control" id="select-1">
-                            <option value="Option 1">Option 1</option>
-                            <option value="Option 2">Option 2</option>
-                            <option value="Option 3">Option 3</option>
-                        </select>
-                        <p class="help-block">Example block-level help text here.</p>
-                    </div>
-                    <div class="form-group draggable">
-                        <label for="input-file-1">File input</label>
-                        <input type="file" id="input-file-1">
-                        <p class="help-block">Example block-level help text here.</p>
-                    </div>
-                    <div class="checkbox draggable">
-                        <label>
-                            <input type="checkbox"> <span>Check me out</span>
-                        </label>
-                    </div>
-                    <div class="form-group draggable" style="padding-right: 20px;">
-                        <button type="submit" class="btn btn-default">Submit</button>
-                    </div>-->
-                </form>
-            </div>
-            <div class="col-md-8" style="padding: 10px;">
-                <div style="background-color: #fff; border-radius: 5px; padding: 20px;
+                    <div class="col-md-9" style="padding: 10px;">
+                        <div style="background-color: #fff; border-radius: 5px; padding: 20px;
 						box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175); ">
-                    <div class="text-muted empty-form text-center" style="font-size: 24px;">Drag & Drop elements to build form.</div>
-                    <div class="form-body droppable">
+                            <div class="text-muted empty-form text-center" style="font-size: 24px;">Drag & Drop elements to build form.</div>
+                            <div class="form-body droppable">
 
+                            </div>
+                        </div>
                     </div>
+
                 </div>
             </div>
-            <div class="col-md-2" style="background-color: #fff;">
-
-                <div class='form-group col-md-12'>
-                    <label class='control-label'>Width column number</label>
-                    <select class='form-control' id="cb-choosecolumn">
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6" selected>6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                    </select>
-                    <label class='control-label'>Label Text</label> <input class='form-control' type='text' name='label' id='label'>
-                    <label class='control-label'>Placeholder</label> <input type='text' name='placeholder' id='placeholder' class='form-control'>
-                    <label class='control-label'>Help Text</label> <input type='text' name='help' id='help' class='form-control'>
-                    <hr />
-                    <button id="btnSave" class='btn btn-info'>Save</button><button id="btnCancel" class='btn btn-danger'>Cancel</button>
+            <div class="propertief">
+                <div class="panel panel-default">
+                    <div class="panel-heading form-inline">
+                        <p style="margin: 0px 0px 0px 0px;font-weight:bold"><span class="glyphicon glyphicon-pushpin"></span> Properties</p>
+                    </div>
+                    <div class="panel-body">
+                        <div class='form-group col-md-12'>
+                            <label class='control-label'>Width column number</label>
+                            <select class='form-control' id="cb-choosecolumn">
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6" selected>6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                            </select>
+                            <label class='control-label'>Label Text</label> <input class='form-control' type='text' name='label' id='label'>
+                            <label class='control-label'>Placeholder</label> <input type='text' name='placeholder' id='placeholder' class='form-control'>
+                            <label class='control-label'>Help Text</label> <input type='text' name='help' id='help' class='form-control'>
+                            <hr />
+                            <button id="btnSave" class='btn btn-info'>Save</button><button id="btnCancel" class='btn btn-danger'>Cancel</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
     </div>
 
 </body>
