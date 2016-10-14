@@ -2,7 +2,12 @@
     "title": "Text Input",
     "fields": {
       "id": {
-        "label": "ID / Name",
+        "label": "ID / Name Block",
+        "type": "input",
+        "value": "blockinput"
+      },
+      "inputid": {
+        "label": "ID / Name Input",
         "type": "input",
         "value": "textinput"
       },
