@@ -46,19 +46,22 @@
         }
     </style>
     <script>
+
         var ItemViewInput = Backbone.Model.extend({
             initialize: function () {
                 //alert("Welcome to this world");
             }
         });
-
+        var jsonProperties = {};      //template html
+        var jsonPropertiesValue = {}; //template json
+        var jsonPropertiesValueDirrect = {}; //template dirrect
         var $selectElement;
         var currentIndex = 0;
 
         $(document).ready(function () {
             //after setup component begin dragables
             setup_component('panel.json');
-           // setup_component('input.json');
+            setup_component('textinput.json');
         });
 
         var setup_component = function (filename) {
@@ -67,65 +70,67 @@
             loadJSON('js/data/' + filename, function (response) {
                 // Parse JSON string into object
                 var dataJson = JSON.parse(response);
-                for (var index = 0; index < dataJson.length ; index++) {
-                    var dataJsonObject = dataJson[index];
-                    var title = dataJsonObject.title;
-                    //file name template
-                    var fileNameTemple = title.split(' ').join('').toString().toLowerCase();
-                    var fiels = dataJsonObject.fields;
-                    //create view object
-                    var itemViewInput = new ItemViewInput();
-                    itemViewInput.set({ label: title });
+                //save json properties
+                var key = filename.substring(0, filename.length - 5);
+                jsonProperties[key] = dataJson;
 
-                    $.each(fiels, function (key, value) {
-                        var fielsValue = value;
-                        $.each(fielsValue, function (keyChild, valueChild) {
-                            if (keyChild == 'value') {
-                                if (valueChild.constructor === Array) {
-                                    for (var i = 0; i < valueChild.length ; i++) {
-                                        if (valueChild[i].selected) {
-                                            itemViewInput.set(key.toString(), valueChild[i].value);
-                                        }
-                                    }
-                                } else {
-                                    if (key.toString() == 'id') {
-                                        itemViewInput.set(key.toString(), valueChild + '-id-0');
-                                    } else {
-                                        itemViewInput.set(key.toString(), valueChild);
+                var dataJsonObject = dataJson;
+                var title = dataJsonObject.title;
+                //file name template
+                var fileNameTemple = title.split(' ').join('').toString().toLowerCase();
+                var fiels = dataJsonObject.fields;
+                //create view object
+                var itemViewInput = new ItemViewInput();
+                itemViewInput.set({ label: title });
+
+                $.each(fiels, function (key, value) {
+                    var fielsValue = value;
+                    $.each(fielsValue, function (keyChild, valueChild) {
+                        if (keyChild == 'value') {
+                            if (valueChild.constructor === Array) {
+                                for (var i = 0; i < valueChild.length ; i++) {
+                                    if (valueChild[i].selected) {
+                                        itemViewInput.set(key.toString(), valueChild[i].value);
                                     }
                                 }
+                            } else {
+                                if (key.toString() == 'id') {
+                                    itemViewInput.set(key.toString(), valueChild + '-id-0');
+                                } else {
+                                    itemViewInput.set(key.toString(), valueChild);
+                                }
                             }
-
-                        });
-
-                    });
-                    console.log(itemViewInput);
-
-                    loadHtmlTemplate('js/teamplate/' + fileNameTemple + '.html', function (response) {
-                        console.log(response);
-
-                        var ItemView = Backbone.View.extend({
-                            tagName: 'div',
-
-                            my_template: _.template(response),
-
-                            initialize: function () {
-                                this.render();
-                            },
-
-                            render: function () {
-                                this.$el.addClass('draggable ui-draggable');
-                                //this.$el.addClass('component');
-                                this.$el.html(this.my_template(this.model.toJSON()));
-                            }
-                        });
-
-                        var itemView = new ItemView({ model: itemViewInput });
-                        $('#formInput').append(itemView.el);
+                        }
 
                     });
 
-                }
+                });
+                console.log(itemViewInput);
+
+                loadHtmlTemplate('js/teamplate/' + fileNameTemple + '.html', function (response) {
+                    console.log(response);
+
+                    var ItemView = Backbone.View.extend({
+                        tagName: 'div',
+
+                        my_template: _.template(response),
+
+                        initialize: function () {
+                            this.render();
+                        },
+
+                        render: function () {
+                            this.$el.addClass('draggable ui-draggable');
+                            //this.$el.addClass('component');
+                            this.$el.html(this.my_template(this.model.toJSON()));
+                        }
+                    });
+
+                    var itemView = new ItemView({ model: itemViewInput });
+                    $('#formInput').append(itemView.el);
+                    jsonPropertiesValue[key] = itemViewInput;
+                });
+
 
                 setup_draggable();
             });
@@ -317,6 +322,7 @@
                     }
                 }
             });
+
             $(".droppable").droppable({
                 accept: ".draggable",
                 helper: "clone",
@@ -325,6 +331,7 @@
                     //(".empty-form").remove();
                     var $orig = $(ui.draggable);
                     var $hasSpace = false;
+                    // get id of ofbject
 
                     if (!$(ui.draggable).hasClass("dropped")) {
                         //tim tat ca cac row
@@ -337,7 +344,7 @@
                                     .clone()
                                     .addClass("dropped")
                                     .css({ "position": "static", "left": null, "right": null });
-                                $(this).parent().addClass("select-element");
+                                $el.addClass("select-element");
                                 $(this).parent().append($el);
                                 $(this).remove();
                             }
@@ -345,13 +352,26 @@
 
                         // update id
                         var id = $orig.find(":input").attr("id");
-
+                        var type = '';
                         if (id) {
                             id = id.split("-").slice(0, -1).join("-") + "-"
                                 + (parseInt(id.split("-").slice(-1)[0]) + 1)
 
                             $orig.find(":input").attr("id", id);
                             $orig.find("label").attr("for", id);
+                        } else {
+                            id = $orig.children().first().attr("id");
+                            type = $orig.children().first().attr("nameElement");
+
+                            if (id) {
+                                var oriTemplateJson = jsonPropertiesValue[type].clone();
+                                oriTemplateJson.set("id", id);
+                                jsonPropertiesValueDirrect[id] = oriTemplateJson;
+
+                                id = id.split("-").slice(0, -1).join("-") + "-"
+                                + (parseInt(id.split("-").slice(-1)[0]) + 1);
+                                $orig.children().first().attr("id", id);
+                            }
                         }
 
                         // tools
@@ -450,15 +470,57 @@
             });
 
             $el.addClass("box-edit-highlight");
-            init_propertive(1, 1);
             $selectElement = $el;
+            //find type of element
+            var $childViews = $selectElement.first().children();
+            if ($childViews.length > 0) {
+                $.each($childViews, function (index, element) {
+                    $type = $(this).attr('nameElement');
+                    if ($type != '') {
+                        init_propertive($type, $(this));
+                        return false;
+                    }
+                });
+            }
+
+            $(".propertief").slideDown();
         });
 
-        var init_propertive = function (id, type) {
+        var init_propertive = function (type, element) {
+            var properties = jsonProperties[type];
+            var fiels = properties.fields;
+            var currentValue = jsonPropertiesValueDirrect[element.attr("id")];
+            
+            $("#tbl_properties").empty();
 
+            $.each(fiels, function (k, v) {
+                var label = v.label;
+                var type = v.type;
+                if (v.value.constructor === Array) {
+
+                } else {
+                    if (type == 'input') {
+                        $("#tbl_properties").append($("<label>").text(label));
+                        
+                        $("#tbl_properties").append($('<input type="text">').attr({ id: 'from', name: 'from' }).addClass('form-control').val(currentValue.get(k)));
+
+                        //<input class='form-control' type='text' name='label' id='label'>
+                    }
+                }
+            });
+            $("#tbl_properties").append($("<hr>"));
+            $("#tbl_properties").append($("<buton>").attr({ id: "btnSave" }).addClass('btn btn-info').text('Save'));
+            $("#tbl_properties").append($("<buton>").attr({id: "btnCancel"}).addClass('btn btn-danger').text('Cancel'));
+
+           //lert(element.attr("id"));
+            //element.replaceWith("<h2>New heading</h2>");
         };
 
         $(document).on("click", "#btnCancel", function (ev) {
+            $(".propertief").slideUp();
+        });
+
+        $(document).on("click", "#btnSave", function (ev) {
 
         });
 
@@ -582,7 +644,7 @@
                         <p style="margin: 0px 0px 0px 0px;font-weight:bold"><span class="glyphicon glyphicon-pushpin"></span> Properties</p>
                     </div>
                     <div class="panel-body">
-                        <div class='form-group col-md-12'>
+                        <div id="tbl_properties" class='form-group'>
                             <label class='control-label'>Width column number</label>
                             <select class='form-control' id="cb-choosecolumn">
                                 <option value="3">3</option>
@@ -600,7 +662,7 @@
                             <label class='control-label'>Placeholder</label> <input type='text' name='placeholder' id='placeholder' class='form-control'>
                             <label class='control-label'>Help Text</label> <input type='text' name='help' id='help' class='form-control'>
                             <hr />
-                            <button id="btnSave" class='btn btn-info'>Save</button><button id="btnCancel" class='btn btn-danger'>Cancel</button>
+                            <button id="btnSave" class='btn btn-info'>Save</button> &nbsp; &nbsp;<button id="btnCancel" class='btn btn-danger'>Cancel</button>
                         </div>
                     </div>
                 </div>
