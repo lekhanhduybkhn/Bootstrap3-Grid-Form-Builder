@@ -363,6 +363,7 @@
                             id = id.split("-").slice(0, -1).join("-") + "-"
                                 + (parseInt(id.split("-").slice(-1)[0]) + 1)
 
+                            $orig.children().first().attr("id", id);
                             $orig.find(":input").attr("id", id);
                             $orig.find("label").attr("for", id);
                         } else {
@@ -554,10 +555,23 @@
             var allClass = $(".select-element").each(function () {
                 $(this).removeClass("box-edit-highlight");
             });
-
+            
+            var currentValue = jsonPropertiesValueDirrect[element.attr("id")].clone();
+            var checkSame = false;
+            if (currentValue.get("id") != $('#' + type + "_" + "id").val()) {
+                for (key in jsonPropertiesValueDirrect) {
+                    if (key == $('#' + type + "_" + "id").val()) {
+                        checkSame = true;
+                        alert('Has a element same id');
+                        break;
+                    }
+                }
+            }
+            if (checkSame)
+                return;
             var properties = jsonProperties[type];
             var fiels = properties.fields;
-            var currentValue = jsonPropertiesValueDirrect[element.attr("id")].clone();
+           
             delete jsonPropertiesValueDirrect[element.attr("id")];
 
             $.each(fiels, function (k, v) {
