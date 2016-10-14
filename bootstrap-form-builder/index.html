@@ -52,8 +52,9 @@
                 //alert("Welcome to this world");
             }
         });
-        var jsonProperties = {};      //template html
-        var jsonPropertiesValue = {}; //template json
+        var templateHtml = {};
+        var jsonProperties = {};      //template json
+        var jsonPropertiesValue = {}; //template json backbone
         var jsonPropertiesValueDirrect = {}; //template dirrect
         var $selectElement;
         var currentIndex = 0;
@@ -109,7 +110,7 @@
 
                 loadHtmlTemplate('js/teamplate/' + fileNameTemple + '.html', function (response) {
                     console.log(response);
-
+                    templateHtml[key] = response;
                     var ItemView = Backbone.View.extend({
                         tagName: 'div',
 
@@ -495,16 +496,22 @@
 
             $.each(fiels, function (k, v) {
                 var label = v.label;
-                var type = v.type;
                 if (v.value.constructor === Array) {
-
-                } else {
-                    if (type == 'input') {
+                    if (v.type == 'select') {
                         $("#tbl_properties").append($("<label>").text(label));
-                        
-                        $("#tbl_properties").append($('<input type="text">').attr({ id: 'from', name: 'from' }).addClass('form-control').val(currentValue.get(k)));
+                        $("#tbl_properties").append($("<select>").attr({ id: type + "_" + k }).addClass('form-control'));
 
-                        //<input class='form-control' type='text' name='label' id='label'>
+                        $.each(v.value, function (i, item) {
+                            $('#' + type + "_" + k).append($('<option>', {
+                                value: item.value,
+                                text: item.label
+                            }));
+                        });
+                    }
+                } else {
+                    if (v.type == 'input') {
+                        $("#tbl_properties").append($("<label>").text(label));
+                        $("#tbl_properties").append($('<input type="text">').attr({ id: (type + "_" + k), name: (type + "_" + k) }).addClass('form-control').val(currentValue.get(k)));
                     }
                 }
             });
@@ -521,8 +528,56 @@
         });
 
         $(document).on("click", "#btnSave", function (ev) {
+            if ($selectElement) {
+                var $childViews = $selectElement.first().children();
+                if ($childViews.length > 0) {
+                    $.each($childViews, function (index, element) {
+                        $type = $(this).attr('nameElement');
+                        if ($type != '') {
+                            save_propertive($type, $(this));
+                            return false;
+                        }
+                    });
+                }
 
+                $(".propertief").slideUp();
+            }
         });
+
+        var save_propertive = function (type, element) {
+            var allClass = $(".select-element").each(function () {
+                $(this).removeClass("box-edit-highlight");
+            });
+
+            var properties = jsonProperties[type];
+            var fiels = properties.fields;
+            var currentValue = jsonPropertiesValueDirrect[element.attr("id")].clone();
+            delete jsonPropertiesValueDirrect[element.attr("id")];
+
+            $.each(fiels, function (k, v) {
+                currentValue.set(k, $('#' + type + "_" + k).val());
+            });
+            jsonPropertiesValueDirrect[$('#' + type + "_" + "id").val()] = currentValue;
+
+            var ItemView = Backbone.View.extend({
+              //  tagName: 'div',
+
+                my_template: _.template(templateHtml[type]),
+
+                initialize: function () {
+                    this.render();
+                },
+
+                render: function () {
+                  //  this.$el.addClass('draggable ui-draggable');
+                    //this.$el.addClass('component');
+                    this.$el.html(this.my_template(this.model.toJSON()));
+                }
+            });
+
+            var itemView = new ItemView({ model: currentValue });
+            element.replaceWith(itemView.$el.children().first());
+        }
 
         $(document).on("change", "#cb-choosecolumn", function (ev) {
             var $temp = $(this).val();
