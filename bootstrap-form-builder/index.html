@@ -49,7 +49,7 @@
 
         var ItemViewInput = Backbone.Model.extend({
             initialize: function () {
-              
+
             }
         });
         var templateHtml = {};
@@ -165,10 +165,19 @@
                         var $numberRow = parseInt($diffY / $hSrcObj) + 1;
                         //lay ra tat ca cac row
                         var $rows = $(".form-body").find("div.row");
+
+                        var sumheight = 0;
+                        if ($rows.length > 0) {
+                            $rows.each(function (index) {
+                                $eRow = $(this);
+                                sumheight += $eRow.height();
+                            });
+                            $numberRow = $rows.length;
+                        }
                         //neu chua co row nao
-                        if ($rows.length < $numberRow) {
+                        if ($diffY > sumheight) {
                             //tao cac row
-                            for (var i = 0; i < $numberRow ; i++) {
+                            for (var i = 0; i <= $numberRow ; i++) {
                                 var $eRow = document.getElementById("row" + i);
                                 if (!$eRow) { //not exits row i
                                     $divRow = $("<div/>").addClass("row").attr('id', 'row' + i);
@@ -188,11 +197,21 @@
                                 }
                             }
                         } else {
+                           
                             $rows.each(function () {
                                 $eRow = $(this);
+
                                 var $indexRow = parseInt($eRow.attr('id').substring(3));
 
-                                if ($indexRow == parseInt($diffY / $hSrcObj)) { //đúng row đấy rồi
+                                if ($diffY >= ($eRow.offset().top - $posY) && $diffY < ($eRow.offset().top - $posY + $eRow.height())) {
+                                    //check xem có 1 panel bên trong không
+                                    $childrenBlocks = $(this).children();
+                                    if ($childrenBlocks.length > 0) {
+                                        $.each($childrenBlocks, function () {
+
+                                        });
+                                    }
+                                    
                                     var $total = 0;
                                     var $rowElements = $(this).find("div.destDiv");
                                     var $totalWidth = 0;
@@ -239,12 +258,12 @@
                                             }
                                         }
                                     } else {
-
+                                      
                                         var $rowElements = $(this).find("div.destDiv");
                                         var $featureBlog = $rowElements.length;
                                         var $distance = $wDest / $featureBlog;
                                         if ($(this).find("div.destDivBlock").length > 0) {
-                                            console.log('tao lai');
+                                            //console.log('tao lai');
                                             for (var ii = 0 ; ii < $featureBlog ; ii++) {
                                                 if ((ui.position.left - $posX) >= (ii * $distance) && (ui.position.left - $posX) <= ((ii + 1) * $distance)) {
                                                     if ((currentIndex != ii)) {
@@ -277,7 +296,9 @@
                                             }
                                         }
                                     }
+
                                 } else {
+                                    
                                     //nếu mà kéo ra khỏi row đấy
                                     if ($(this).find("div.destDivBlock").length > 0) {
                                         var $rowElements = $(this).find("div.destDiv");
@@ -298,6 +319,7 @@
                                         });
                                     }
                                 }
+
                                 //for hightlight
 
                                 var $rowElements = $(this).find("div.destDiv");
@@ -319,7 +341,52 @@
                                 });
 
                             });
+
                         }
+                    } else {
+                        var $rows = $(".form-body").find("div.row");
+                        $rows.each(function () {
+                            if ($(this).find("div.destDivBlock").length > 0) {
+                                var $rowElements = $(this).find("div.destDiv");
+                                $featureBlog = $rowElements.length - 1;
+                                //remove destDivBlock
+                                $desDivBlock = $(this).find("div.destDivBlock");
+                                $desDivBlock.parent().remove();
+
+                                $.each($rowElements, function (index, value) {
+                                    var $currentClass = value.className.split(" ");
+                                    var $colClass = '';
+                                    $.each($currentClass, function () {
+                                        if (this.trim().indexOf("col-md") > -1) {
+                                            $colClass = this.trim();
+                                        }
+                                    });
+                                    $(this).removeClass($colClass).addClass("col-md-" + (12 / $featureBlog));
+                                });
+                            }
+                        });
+
+                        var $rows = $(".form-body").find("div.row");
+                        $rows.each(function () {
+                            $eRow = $(this);
+                            var $rowElements = $(this).find("div.destDiv");
+                            $.each($rowElements, function (index, value) {
+                                $destDivBlocks = $(this).find("div.destDivBlock");
+                                if ($destDivBlocks.length > 0) {
+                                    $.each($destDivBlocks, function () {
+                                        $destDivBlock = $(this);
+                                        if ((ui.position.left - $posX) >= ($destDivBlock.offset().left - $posX)
+                                            && (ui.position.left - $posX) < ($destDivBlock.offset().left - $posX + $destDivBlock.outerWidth())
+                                            && (ui.position.top - $posY) >= ($destDivBlock.offset().top - $posY)
+                                            && (ui.position.top - $posY) < ($destDivBlock.offset().top - $posY + $destDivBlock.outerHeight())) {
+                                            $destDivBlock.css('background-color', '#eee');
+                                        } else {
+                                            $destDivBlock.css('background-color', 'transparent');
+                                        }
+                                    });
+                                }
+                            });
+                        });
                     }
                 }
             });
@@ -337,7 +404,7 @@
                     if (!$(ui.draggable).hasClass("dropped")) {
                         //tim tat ca cac row
                         //console.log($orig.children().first().attr('nameElement'));
-                       
+
 
                         $destDivBlock = $(".form-body").find("div.destDivBlock");
                         $.each($destDivBlock, function () {
@@ -353,7 +420,7 @@
                                 $(this).remove();
                                 //check neu la panel
                                 if ($el.children().first().attr('nameElement') == 'panel') {
-                                    //$el.children().first().find("div.panel-body").append($("<div/>").addClass("form-body droppable"));
+                                    $el.children().first().find("div.panel-body").append($("<div/>").addClass("droppable"));
                                 }
                             }
                         });
@@ -404,6 +471,10 @@
                     }
                 }
             }).sortable();
+
+        }
+
+        var funtion_drag_hover = function (parent) {
 
         }
 
@@ -504,7 +575,7 @@
             var properties = jsonProperties[type];
             var fiels = properties.fields;
             var currentValue = jsonPropertiesValueDirrect[element.attr("id")];
-            
+
             $("#tbl_properties").empty();
 
             $.each(fiels, function (k, v) {
@@ -531,9 +602,9 @@
             });
             $("#tbl_properties").append($("<hr>"));
             $("#tbl_properties").append($("<buton>").attr({ id: "btnSave" }).addClass('btn btn-info').text('Save'));
-            $("#tbl_properties").append($("<buton>").attr({id: "btnCancel"}).addClass('btn btn-danger').text('Cancel'));
+            $("#tbl_properties").append($("<buton>").attr({ id: "btnCancel" }).addClass('btn btn-danger').text('Cancel'));
 
-           //lert(element.attr("id"));
+            //lert(element.attr("id"));
             //element.replaceWith("<h2>New heading</h2>");
         };
 
@@ -562,7 +633,7 @@
             var allClass = $(".select-element").each(function () {
                 $(this).removeClass("box-edit-highlight");
             });
-            
+
             var currentValue = jsonPropertiesValueDirrect[element.attr("id")].clone();
             var checkSame = false;
             if (currentValue.get("id") != $('#' + type + "_" + "id").val()) {
@@ -578,7 +649,7 @@
                 return;
             var properties = jsonProperties[type];
             var fiels = properties.fields;
-           
+
             delete jsonPropertiesValueDirrect[element.attr("id")];
 
             $.each(fiels, function (k, v) {
@@ -587,7 +658,7 @@
             jsonPropertiesValueDirrect[$('#' + type + "_" + "id").val()] = currentValue;
 
             var ItemView = Backbone.View.extend({
-              //  tagName: 'div',
+                //  tagName: 'div',
 
                 my_template: _.template(templateHtml[type]),
 
@@ -596,7 +667,7 @@
                 },
 
                 render: function () {
-                  //  this.$el.addClass('draggable ui-draggable');
+                    //  this.$el.addClass('draggable ui-draggable');
                     //this.$el.addClass('component');
                     this.$el.html(this.my_template(this.model.toJSON()));
                 }
