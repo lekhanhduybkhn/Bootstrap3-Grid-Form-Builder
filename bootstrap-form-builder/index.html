@@ -206,21 +206,30 @@
                                 if ($diffY >= ($eRow.offset().top - $posY) && $diffY < ($eRow.offset().top - $posY + $eRow.height())) {
                                     //check xem có 1 panel bên trong không
                                     $childrenBlocks = $(this).children();
+                                    $isPanel = false;
                                     if ($childrenBlocks.length > 0) {
-                                        $.each($childrenBlocks, function () {
-
+                                        $.each($childrenBlocks, function (index, value) {
+                                            if (($(value).children().first().children().first()).attr('nameElement') == 'panel') {
+                                                $panelBody = ($(value).children().first().children().first()).find('div.panel-body').first();
+                                                if ($diffY > ($panelBody.offset().top - $posY) && $diffY < ($panelBody.offset().top - $posY + $panelBody.outerHeight())
+                                                    && ui.position.left > $panelBody.offset().left && (ui.position.left) < ($panelBody.offset().left + $panelBody.width())) {
+                                                    console.log('vao panel');
+                                                    $isPanel = true;
+                                                    funtion_drag_hover_panel($panelBody,ui);
+                                                } else {
+                                                   // $isPanel = false;
+                                                }
+                                                $isPanel = true;
+                                                return false;
+                                            }
                                         });
                                     }
-                                    
-                                    var $total = 0;
+                                    if ($isPanel) {
+                                        return false;
+                                    }
+
                                     var $rowElements = $(this).find("div.destDiv");
-                                    var $totalWidth = 0;
-                                    $.each($rowElements, function (index, value) {
-                                        var $currentClass = value.className;
-                                        var $weight = $currentClass.substring($currentClass.indexOf("col-md") + 7, $currentClass.indexOf("col-md") + 8);
-                                        $total += parseInt($weight);
-                                        $totalWidth += $(this).outerWidth();
-                                    });
+                                 
                                     var $featureLength = $rowElements.length;
                                     $destDivBlocks = $(this).find("div.destDivBlock");
                                     if ($destDivBlocks.length == 0 && $featureLength < 4) {
@@ -420,7 +429,7 @@
                                 $(this).remove();
                                 //check neu la panel
                                 if ($el.children().first().attr('nameElement') == 'panel') {
-                                    $el.children().first().find("div.panel-body").append($("<div/>").addClass("droppable"));
+                                   // $el.children().first().find("div.panel-body").append($("<div/>").addClass("droppable"));
                                 }
                             }
                         });
@@ -474,7 +483,45 @@
 
         }
 
-        var funtion_drag_hover = function (parent) {
+        var funtion_drag_hover_panel = function (panel,ui){
+            var $numberRow = 0;
+            //lay ra tat ca cac row
+            var $rows = panel.find("div.row");
+            var $hSrcObj = ui.helper.outerHeight() + 35;
+
+            var sumheight = 0;
+            if ($rows.length > 0) {
+                $rows.each(function (index) {
+                    $eRow = $(this);
+                    sumheight += $eRow.height();
+                });
+                $numberRow = $rows.length;
+            }
+
+            var $diffY = ui.position.top - $(panel).offset().top;
+
+            if ($diffY > sumheight) {
+                //tao cac row
+                for (var i = 0; i <= $numberRow ; i++) {
+                    var $eRow = document.getElementById("row-panel" + i);
+                    if (!$eRow) { //not exits row i
+                        $divRow = $("<div/>").addClass("row").attr('id', 'row' + i);
+
+                        var $col6 = $("<div/>").addClass("col-md-12 destDiv")/*.attr('id', 'col' + $index)*/;
+
+                        var $hightLight = $("<div/>").addClass('destDivBlock');
+                        $hightLight.css('background-color', '#eee');
+                        $hightLight.css('height', $hSrcObj + 'px');
+                        $hightLight.css('outline-color', '#ddddd');
+                        $hightLight.css('outline-style', 'dashed');
+                        $hightLight.css('outline-width', '1px');
+                        $col6.append($hightLight);
+                        $divRow.append($col6);
+
+                        panel.append($divRow);
+                    }
+                }
+            }
 
         }
 
