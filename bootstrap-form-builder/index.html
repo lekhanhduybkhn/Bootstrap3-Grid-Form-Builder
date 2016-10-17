@@ -483,11 +483,17 @@
 
         }
 
-        var funtion_drag_hover_panel = function (panel,ui){
+        var funtion_drag_hover_panel = function (panel, ui) {
+            if (ui.helper.children().first().attr('nameelement') == 'panel') {
+                return;
+            }
             var $numberRow = 0;
             //lay ra tat ca cac row
             var $rows = panel.find("div.row");
             var $hSrcObj = ui.helper.outerHeight() + 35;
+            var $posY = $(panel).offset().top;
+            var $posX = $(panel).offset().left;
+            var $wDest = $(panel).outerWidth();
 
             var sumheight = 0;
             if ($rows.length > 0) {
@@ -505,7 +511,7 @@
                 for (var i = 0; i <= $numberRow ; i++) {
                     var $eRow = document.getElementById("row-panel" + i);
                     if (!$eRow) { //not exits row i
-                        $divRow = $("<div/>").addClass("row").attr('id', 'row' + i);
+                        $divRow = $("<div/>").addClass("row").attr('id', 'row-panel' + i);
 
                         var $col6 = $("<div/>").addClass("col-md-12 destDiv")/*.attr('id', 'col' + $index)*/;
 
@@ -521,6 +527,9 @@
                         panel.append($divRow);
                     }
                 }
+            } else {
+               
+
             }
 
         }
