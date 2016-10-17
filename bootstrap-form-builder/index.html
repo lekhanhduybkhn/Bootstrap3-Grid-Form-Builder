@@ -336,6 +336,9 @@
 
                     if (!$(ui.draggable).hasClass("dropped")) {
                         //tim tat ca cac row
+                        //console.log($orig.children().first().attr('nameElement'));
+                       
+
                         $destDivBlock = $(".form-body").find("div.destDivBlock");
                         $.each($destDivBlock, function () {
                             $destDiv = $(this);
@@ -348,6 +351,10 @@
                                 $el.addClass("select-element");
                                 $(this).parent().append($el);
                                 $(this).remove();
+                                //check neu la panel
+                                if ($el.children().first().attr('nameElement') == 'panel') {
+                                    //$el.children().first().find("div.panel-body").append($("<div/>").addClass("form-body droppable"));
+                                }
                             }
                         });
 
