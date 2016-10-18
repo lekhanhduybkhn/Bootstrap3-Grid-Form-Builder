@@ -106,10 +106,9 @@
                     });
 
                 });
-                console.log(itemViewInput);
-
+                //console.log(itemViewInput);
                 loadHtmlTemplate('js/teamplate/' + fileNameTemple + '.html', function (response) {
-                    console.log(response);
+                    //console.log(response);
                     templateHtml[key] = response;
                     var ItemView = Backbone.View.extend({
                         tagName: 'div',
@@ -166,16 +165,27 @@
                         //lay ra tat ca cac row
                         var $rows = $(".form-body").find("div.row");
 
+                        //xóa các row không có gì
                         var sumheight = 0;
                         if ($rows.length > 0) {
                             $rows.each(function (index) {
                                 $eRow = $(this);
                                 sumheight += $eRow.height();
+                                if ($(this).children().length == 0) {
+                                    $(this).remove();
+                                }
                             });
                             $numberRow = $rows.length;
                         }
+                        //change lại id của row
+                        $rows = $(".form-body").find("div.row");
+                        if ($rows.length > 0) {
+                            $rows.each(function (index) {
+                                $(this).attr('id', 'row' + index);
+                            });
+                        }
                         //neu chua co row nao
-                        if ($diffY > sumheight) {
+                        if ($diffY > sumheight && $diffY < sumheight + $hSrcObj) {
                             //tao cac row
                             for (var i = 0; i <= $numberRow ; i++) {
                                 var $eRow = document.getElementById("row" + i);
@@ -198,7 +208,7 @@
                             }
                         } else {
                            
-                            $rows.each(function () {
+                            $rows.each(function (index) {
                                 $eRow = $(this);
 
                                 var $indexRow = parseInt($eRow.attr('id').substring(3));
@@ -232,6 +242,7 @@
                                  
                                     var $featureLength = $rowElements.length;
                                     $destDivBlocks = $(this).find("div.destDivBlock");
+                                    //check neu chua co div hover thi tao div hover 
                                     if ($destDivBlocks.length == 0 && $featureLength < 4) {
                                         var $featureBlog = $featureLength + 1;
                                         var $distance = $wDest / $featureBlog;
@@ -255,19 +266,33 @@
                                                 $hightLight.css('background-color', '#eee');
                                                 $hightLight.css('height', $hSrcObj + 'px');
                                                 $hightLight.css('outline-width', '1px');
-                                                $hightLight.css('outline-color', '#ddddd');
+                                                $hightLight.css('outline-color', '#dddddd');
                                                 $hightLight.css('outline-style', 'dashed');
 
                                                 $col6.append($hightLight);
-                                                if ($i == 0) {
-                                                    $(this).prepend($col6);
-                                                    currentIndex = 0;
+
+                                                var $rowElements = $(this).find("div.destDiv");
+                                                var $featureBlog = $rowElements.length;
+
+                                                var $desDivOther = [];
+                                                $.each($rowElements, function (index, value) {
+                                                     $desDivOther.push($(this).clone());
+                                                     $(this).remove();
+                                                });
+                                                for (var begin = 0; begin <= $featureBlog ; begin++) {
+                                                    if (begin < $i) {
+                                                        $(this).append($desDivOther[begin]);
+                                                    } else if (begin == $i) {
+                                                        $(this).append($col6);
+                                                    } else {
+                                                        $(this).append($desDivOther[begin - 1]);
+                                                    }
                                                 }
                                                 //console.log($i);
                                             }
                                         }
                                     } else {
-                                      
+                                        //neu co div hover roi thi chi viec move giua cac div
                                         var $rowElements = $(this).find("div.destDiv");
                                         var $featureBlog = $rowElements.length;
                                         var $distance = $wDest / $featureBlog;
@@ -307,7 +332,7 @@
                                     }
 
                                 } else {
-                                    
+                                   // console.log("ra row " + index);
                                     //nếu mà kéo ra khỏi row đấy
                                     if ($(this).find("div.destDivBlock").length > 0) {
                                         var $rowElements = $(this).find("div.destDiv");
@@ -342,8 +367,14 @@
                                                 && (ui.position.top - $posY) >= ($destDivBlock.offset().top - $posY)
                                                 && (ui.position.top - $posY) < ($destDivBlock.offset().top - $posY + $destDivBlock.outerHeight())) {
                                                 $destDivBlock.css('background-color', '#eee');
+                                                $destDivBlock.css('outline-width', '1px');
+                                                $destDivBlock.css('outline-color', '#dddddd');
+                                                $destDivBlock.css('outline-style', 'dashed');
                                             } else {
                                                 $destDivBlock.css('background-color', 'transparent');
+                                                $destDivBlock.css('outline-width', '1px');
+                                                $destDivBlock.css('outline-color', 'transparent');
+                                                $destDivBlock.css('outline-style', 'dashed');
                                             }
                                         });
                                     }
@@ -413,8 +444,7 @@
                     if (!$(ui.draggable).hasClass("dropped")) {
                         //tim tat ca cac row
                         //console.log($orig.children().first().attr('nameElement'));
-
-
+                        currentIndex = 0;
                         $destDivBlock = $(".form-body").find("div.destDivBlock");
                         $.each($destDivBlock, function () {
                             $destDiv = $(this);
@@ -528,6 +558,7 @@
                     }
                 }
             } else {
+               
                
 
             }
