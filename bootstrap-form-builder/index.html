@@ -525,13 +525,24 @@
             var $posX = $(panel).offset().left;
             var $wDest = $(panel).outerWidth();
 
+            //xóa các row không có gì
             var sumheight = 0;
             if ($rows.length > 0) {
                 $rows.each(function (index) {
                     $eRow = $(this);
                     sumheight += $eRow.height();
+                    if ($(this).children().length == 0) {
+                        $(this).remove();
+                    }
                 });
                 $numberRow = $rows.length;
+            }
+            //change lại id của row
+            $rows = panel.find("div.row");
+            if ($rows.length > 0) {
+                $rows.each(function (index) {
+                    $(this).attr('id', 'row-panel' + index);
+                });
             }
 
             var $diffY = ui.position.top - $(panel).offset().top;
@@ -558,9 +569,179 @@
                     }
                 }
             } else {
-               
-               
+                $rows.each(function (index) {
+                    $eRow = $(this);
 
+                    var $indexRow = parseInt($eRow.attr('id').substring(9));
+
+                    if ($diffY >= ($eRow.offset().top - $posY) && $diffY < ($eRow.offset().top - $posY + $eRow.height())) {
+                        ////check xem có 1 panel bên trong không
+                        //$childrenBlocks = $(this).children();
+                        //$isPanel = false;
+                        //if ($childrenBlocks.length > 0) {
+                        //    $.each($childrenBlocks, function (index, value) {
+                        //        if (($(value).children().first().children().first()).attr('nameElement') == 'panel') {
+                        //            $panelBody = ($(value).children().first().children().first()).find('div.panel-body').first();
+                        //            if ($diffY > ($panelBody.offset().top - $posY) && $diffY < ($panelBody.offset().top - $posY + $panelBody.outerHeight())
+                        //                && ui.position.left > $panelBody.offset().left && (ui.position.left) < ($panelBody.offset().left + $panelBody.width())) {
+                        //                console.log('vao panel');
+                        //                $isPanel = true;
+                        //                funtion_drag_hover_panel($panelBody, ui);
+                        //            } else {
+                        //                // $isPanel = false;
+                        //            }
+                        //            $isPanel = true;
+                        //            return false;
+                        //        }
+                        //    });
+                        //}
+                        //if ($isPanel) {
+                        //    return false;
+                        //}
+
+                        var $rowElements = $(this).find("div.destDiv");
+
+                        var $featureLength = $rowElements.length;
+                        $destDivBlocks = $(this).find("div.destDivBlock");
+                        //check neu chua co div hover thi tao div hover 
+                        if ($destDivBlocks.length == 0 && $featureLength < 4) {
+                            var $featureBlog = $featureLength + 1;
+                            var $distance = $wDest / $featureBlog;
+                            for (var $i = 0 ; $i < $featureBlog ; $i++) {
+                                if ((ui.position.left - $posX) >= ($i * $distance) && (ui.position.left - $posX) <= (($i + 1) * $distance)) {
+                                    //resize những cái đã có
+                                    $.each($rowElements, function (index, value) {
+                                        var $currentClass = value.className.split(" ");
+                                        var $colClass = '';
+                                        $.each($currentClass, function () {
+                                            if (this.trim().indexOf("col-md") > -1) {
+                                                $colClass = this.trim();
+                                            }
+                                        });
+                                        $(this).removeClass($colClass).addClass("col-md-" + (12 / $featureBlog));
+                                    });
+                                    //sắp xếp và chèn thêm các block div hover
+                                    var $col6 = $("<div/>").addClass("col-md-" + (12 / $featureBlog) + " destDiv");
+
+                                    var $hightLight = $("<div/>").addClass('destDivBlock');
+                                    $hightLight.css('background-color', '#eee');
+                                    $hightLight.css('height', $hSrcObj + 'px');
+                                    $hightLight.css('outline-width', '1px');
+                                    $hightLight.css('outline-color', '#dddddd');
+                                    $hightLight.css('outline-style', 'dashed');
+
+                                    $col6.append($hightLight);
+
+                                    var $rowElements = $(this).find("div.destDiv");
+                                    var $featureBlog = $rowElements.length;
+
+                                    var $desDivOther = [];
+                                    $.each($rowElements, function (index, value) {
+                                        $desDivOther.push($(this).clone());
+                                        $(this).remove();
+                                    });
+                                    for (var begin = 0; begin <= $featureBlog ; begin++) {
+                                        if (begin < $i) {
+                                            $(this).append($desDivOther[begin]);
+                                        } else if (begin == $i) {
+                                            $(this).append($col6);
+                                        } else {
+                                            $(this).append($desDivOther[begin - 1]);
+                                        }
+                                    }
+                                    //console.log($i);
+                                }
+                            }
+                        } else {
+                            //neu co div hover roi thi chi viec move giua cac div
+                            var $rowElements = $(this).find("div.destDiv");
+                            var $featureBlog = $rowElements.length;
+                            var $distance = $wDest / $featureBlog;
+                            if ($(this).find("div.destDivBlock").length > 0) {
+                                //console.log('tao lai');
+                                for (var ii = 0 ; ii < $featureBlog ; ii++) {
+                                    if ((ui.position.left - $posX) >= (ii * $distance) && (ui.position.left - $posX) <= ((ii + 1) * $distance)) {
+                                        if ((currentIndex != ii)) {
+                                            currentIndex = ii;
+                                            var $desDiv = null;
+                                            var $desDivOther = [];
+                                            $.each($rowElements, function (index, value) {
+                                                if ($(this).find("div.destDivBlock").length > 0) {
+                                                    $desDiv = $(this).clone();
+                                                    $(this).remove();
+                                                } else {
+                                                    $desDivOther.push($(this).clone());
+                                                    $(this).remove();
+                                                }
+                                            });
+                                            if ($desDiv != null) {
+                                                var $rows = $('#row-panel' + $indexRow);
+                                                for (var begin = 0; begin < $featureBlog ; begin++) {
+                                                    if (begin < currentIndex) {
+                                                        $rows.append($desDivOther[begin]);
+                                                    } else if (begin == currentIndex) {
+                                                        $rows.append($desDiv);
+                                                    } else {
+                                                        $rows.append($desDivOther[begin - 1]);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    } else {
+                        // console.log("ra row " + index);
+                        //nếu mà kéo ra khỏi row đấy
+                        if ($(this).find("div.destDivBlock").length > 0) {
+                            var $rowElements = $(this).find("div.destDiv");
+                            $featureBlog = $rowElements.length - 1;
+                            //remove destDivBlock
+                            $desDivBlock = $(this).find("div.destDivBlock");
+                            $desDivBlock.parent().remove();
+
+                            $.each($rowElements, function (index, value) {
+                                var $currentClass = value.className.split(" ");
+                                var $colClass = '';
+                                $.each($currentClass, function () {
+                                    if (this.trim().indexOf("col-md") > -1) {
+                                        $colClass = this.trim();
+                                    }
+                                });
+                                $(this).removeClass($colClass).addClass("col-md-" + (12 / $featureBlog));
+                            });
+                        }
+                    }
+
+                    //for hightlight
+
+                    var $rowElements = $(this).find("div.destDiv");
+                    $.each($rowElements, function (index, value) {
+                        $destDivBlocks = $(this).find("div.destDivBlock");
+                        if ($destDivBlocks.length > 0) {
+                            $.each($destDivBlocks, function () {
+                                $destDivBlock = $(this);
+                                if ((ui.position.left - $posX) >= ($destDivBlock.offset().left - $posX)
+                                    && (ui.position.left - $posX) < ($destDivBlock.offset().left - $posX + $destDivBlock.outerWidth())
+                                    && (ui.position.top - $posY) >= ($destDivBlock.offset().top - $posY)
+                                    && (ui.position.top - $posY) < ($destDivBlock.offset().top - $posY + $destDivBlock.outerHeight())) {
+                                    $destDivBlock.css('background-color', '#eee');
+                                    $destDivBlock.css('outline-width', '1px');
+                                    $destDivBlock.css('outline-color', '#dddddd');
+                                    $destDivBlock.css('outline-style', 'dashed');
+                                } else {
+                                    $destDivBlock.css('background-color', 'transparent');
+                                    $destDivBlock.css('outline-width', '1px');
+                                    $destDivBlock.css('outline-color', 'transparent');
+                                    $destDivBlock.css('outline-style', 'dashed');
+                                }
+                            });
+                        }
+                    });
+
+                });
             }
 
         }
